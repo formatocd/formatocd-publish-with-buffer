@@ -3,7 +3,7 @@
  * Plugin Name: WP Publish with Buffer
  * Plugin URI:  https://github.com/formatocd/wp-publish-with-buffer
  * Description: Generates Buffer posts automatically from WordPress posts.
- * Version:     1.1.0
+ * Version:     1.0.0
  * Author:      Carlos Durán
  * License:     GPL-2.0+
  * Text Domain: wp-publish-with-buffer
@@ -40,8 +40,16 @@ function buffer_plugin_add_meta_box() {
 function buffer_plugin_meta_box_html( $post ) {
     wp_nonce_field( 'buffer_plugin_save_meta', 'buffer_plugin_meta_nonce' );
 
+    $already_sent = get_post_meta( $post->ID, '_buffer_sent_flag', true );
+
+    // LÓGICA UX: Si ya se ha enviado, mostramos un aviso y ocultamos el formulario
+    if ( 'yes' === $already_sent ) {
+        echo '<p><span class="dashicons dashicons-yes-alt" style="color: #46b450;"></span> <strong>' . esc_html__( 'This post has already been published.', 'wp-publish-with-buffer' ) . '</strong></p>';
+        return;
+    }
+
     $global_default_mode = get_option( 'buffer_default_mode', '' ); 
-    $has_meta = metadata_exists( 'post', $post->ID, '_buffer_is_active' );
+    $has_meta            = metadata_exists( 'post', $post->ID, '_buffer_is_active' );
 
     if ( ! $has_meta ) {
         if ( '' !== $global_default_mode ) {
@@ -57,6 +65,7 @@ function buffer_plugin_meta_box_html( $post ) {
         $mode      = get_post_meta( $post->ID, '_buffer_mode', true );
         $due_at    = get_post_meta( $post->ID, '_buffer_due_at', true );
     }
+
     ?>
     <p>
         <label>
@@ -103,7 +112,14 @@ function buffer_plugin_save_meta_box_data( $post_id ) {
         return;
     }
     if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) return;
+    if ( wp_is_post_revision( $post_id ) ) return; 
     if ( ! current_user_can( 'edit_post', $post_id ) ) return;
+
+    // Si ya se envió, bloqueamos cualquier intento de guardar nuevos datos de Buffer
+    $already_sent = get_post_meta( $post_id, '_buffer_sent_flag', true );
+    if ( 'yes' === $already_sent ) {
+        return;
+    }
 
     $is_active = isset( $_POST['buffer_is_active'] ) ? 'yes' : 'no';
     update_post_meta( $post_id, '_buffer_is_active', $is_active );
@@ -132,9 +148,9 @@ function buffer_plugin_trigger_scheduled_post( $post_id ) {
 
 function buffer_plugin_check_and_send( $post_id, $is_active ) {
     $already_sent = get_post_meta( $post_id, '_buffer_sent_flag', true );
-    $behavior     = get_option( 'buffer_update_behavior', 'first_time' );
     
-    if ( 'yes' === $is_active && ( 'yes' !== $already_sent || 'always' === $behavior ) ) {
+    // Simplificado: Solo se envía si está activo y NUNCA se ha enviado antes
+    if ( 'yes' === $is_active && 'yes' !== $already_sent ) {
         update_post_meta( $post_id, '_buffer_sent_flag', 'yes' ); 
         buffer_plugin_send_to_buffer( $post_id );
     }
@@ -147,8 +163,6 @@ function buffer_plugin_check_and_send( $post_id, $is_active ) {
 function buffer_plugin_send_to_buffer( $post_id ) {
     $post = get_post( $post_id );
     
-    error_log("Buffer API: Initiating send for post ID " . $post_id);
-
     $api_token   = get_option( 'buffer_api_token' );
     $channels    = get_option( 'buffer_channels', [] ); 
     $template    = get_option( 'buffer_template', '{title} - {url}' );
@@ -182,10 +196,12 @@ function buffer_plugin_send_to_buffer( $post_id ) {
         $template
     );
 
+    // IMAGEN REAL DINÁMICA DE PRODUCCIÓN
     $image_url = null;
     if ( has_post_thumbnail( $post_id ) ) {
         $image_url = get_the_post_thumbnail_url( $post_id, 'full' );
     }
+    
 
     $mode   = get_post_meta( $post_id, '_buffer_mode', true );
     $due_at = get_post_meta( $post_id, '_buffer_due_at', true );
@@ -223,7 +239,8 @@ function buffer_plugin_send_to_buffer( $post_id ) {
             'variables' => [ 'input' => $input_vars ]
         ];
 
-        $response = wp_remote_post( 'https://api.buffer.com', [
+        // Cambiado a false para producción (mayor velocidad de carga al publicar)
+        wp_remote_post( 'https://api.buffer.com', [
             'headers'     => [
                 'Content-Type'  => 'application/json',
                 'Authorization' => 'Bearer ' . $api_token,
@@ -260,7 +277,6 @@ function buffer_plugin_settings_init() {
     register_setting( 'buffer_plugin_settings_group', 'buffer_template' );
     register_setting( 'buffer_plugin_settings_group', 'buffer_allowed_category', 'absint' );
     register_setting( 'buffer_plugin_settings_group', 'buffer_default_mode' );
-    register_setting( 'buffer_plugin_settings_group', 'buffer_update_behavior' );
 
     add_settings_section(
         'buffer_plugin_main_section',
@@ -273,7 +289,6 @@ function buffer_plugin_settings_init() {
     add_settings_field( 'buffer_channels', __( 'Channel IDs', 'wp-publish-with-buffer' ), 'buffer_plugin_channels_cb', 'publish-with-buffer', 'buffer_plugin_main_section' );
     add_settings_field( 'buffer_template', __( 'Message Template', 'wp-publish-with-buffer' ), 'buffer_plugin_template_cb', 'publish-with-buffer', 'buffer_plugin_main_section' );
     add_settings_field( 'buffer_default_mode', __( 'Default Publishing Mode', 'wp-publish-with-buffer' ), 'buffer_plugin_mode_cb', 'publish-with-buffer', 'buffer_plugin_main_section' );
-    add_settings_field( 'buffer_update_behavior', __( 'Update Behavior', 'wp-publish-with-buffer' ), 'buffer_plugin_behavior_cb', 'publish-with-buffer', 'buffer_plugin_main_section' );
     add_settings_field( 'buffer_allowed_category', __( 'Filter by Category', 'wp-publish-with-buffer' ), 'buffer_plugin_category_cb', 'publish-with-buffer', 'buffer_plugin_main_section' );
 }
 
@@ -318,17 +333,6 @@ function buffer_plugin_mode_cb() {
         <option value="addToQueue" <?php selected( $val, 'addToQueue' ); ?>><?php esc_html_e( 'Add to Queue', 'wp-publish-with-buffer' ); ?></option>
     </select>
     <p class="description"><?php esc_html_e( 'If you choose "None", the checkbox in the editor will be unchecked by default.', 'wp-publish-with-buffer' ); ?></p>
-    <?php
-}
-
-function buffer_plugin_behavior_cb() {
-    $val = get_option( 'buffer_update_behavior', 'first_time' ); 
-    ?>
-    <select name="buffer_update_behavior">
-        <option value="first_time" <?php selected( $val, 'first_time' ); ?>><?php esc_html_e( 'Only the first time the post is published', 'wp-publish-with-buffer' ); ?></option>
-        <option value="always" <?php selected( $val, 'always' ); ?>><?php esc_html_e( 'Every time it is published or updated', 'wp-publish-with-buffer' ); ?></option>
-    </select>
-    <p class="description"><?php esc_html_e( 'Warning: If you choose "Every time", every time you edit a published post and click "Update", a duplicate post will be sent to Buffer.', 'wp-publish-with-buffer' ); ?></p>
     <?php
 }
 

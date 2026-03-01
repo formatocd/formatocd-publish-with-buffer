@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: WP Publish with Buffer\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-03-01 23:01+0000\n"
+"POT-Creation-Date: 2026-03-01 21:46+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: \n"
@@ -16,27 +16,27 @@ msgstr ""
 "X-Loco-Version: 2.8.2; wp-6.9.1; php-8.4.16\n"
 "X-Domain: wp-publish-with-buffer"
 
-#: wp-publish-with-buffer.php:81 wp-publish-with-buffer.php:333
+#: wp-publish-with-buffer.php:72 wp-publish-with-buffer.php:318
 msgid "Add to Queue"
 msgstr ""
 
-#: wp-publish-with-buffer.php:342
+#: wp-publish-with-buffer.php:338
 msgid "All categories"
 msgstr ""
 
-#: wp-publish-with-buffer.php:283
+#: wp-publish-with-buffer.php:267
 msgid "API and Publishing Settings"
 msgstr ""
 
-#: wp-publish-with-buffer.php:322
+#: wp-publish-with-buffer.php:307
 msgid "Author public display name."
 msgstr ""
 
-#: wp-publish-with-buffer.php:318
+#: wp-publish-with-buffer.php:303
 msgid "Available variables:"
 msgstr ""
 
-#: wp-publish-with-buffer.php:288
+#: wp-publish-with-buffer.php:272
 msgid "Buffer API Token"
 msgstr ""
 
@@ -44,35 +44,39 @@ msgstr ""
 msgid "Carlos Durán"
 msgstr ""
 
-#: wp-publish-with-buffer.php:289
+#: wp-publish-with-buffer.php:273
 msgid "Channel IDs"
 msgstr ""
 
-#: wp-publish-with-buffer.php:82
+#: wp-publish-with-buffer.php:73
 msgid "Custom Scheduled"
 msgstr ""
 
-#: wp-publish-with-buffer.php:87
+#: wp-publish-with-buffer.php:78
 msgid "Date and Time (UTC):"
 msgstr ""
 
-#: wp-publish-with-buffer.php:291
+#: wp-publish-with-buffer.php:275
 msgid "Default Publishing Mode"
 msgstr ""
 
-#: wp-publish-with-buffer.php:320
+#: wp-publish-with-buffer.php:305
 msgid "Direct link to the post."
 msgstr ""
 
-#: wp-publish-with-buffer.php:312
+#: wp-publish-with-buffer.php:329
+msgid "Every time it is published or updated"
+msgstr ""
+
+#: wp-publish-with-buffer.php:297
 msgid "Example:"
 msgstr ""
 
-#: wp-publish-with-buffer.php:292
+#: wp-publish-with-buffer.php:277
 msgid "Filter by Category"
 msgstr ""
 
-#: wp-publish-with-buffer.php:89
+#: wp-publish-with-buffer.php:80
 msgid "Format required for Buffer."
 msgstr ""
 
@@ -84,63 +88,73 @@ msgstr ""
 msgid "https://github.com/formatocd/wp-publish-with-buffer"
 msgstr ""
 
-#: wp-publish-with-buffer.php:335
+#: wp-publish-with-buffer.php:320
 msgid ""
 "If you choose \"None\", the checkbox in the editor will be unchecked by "
 "default."
 msgstr ""
 
-#: wp-publish-with-buffer.php:290
+#: wp-publish-with-buffer.php:274
 msgid "Message Template"
 msgstr ""
 
-#: wp-publish-with-buffer.php:331
+#: wp-publish-with-buffer.php:316
 msgid "None (Disabled on posts)"
 msgstr ""
 
-#: wp-publish-with-buffer.php:321
+#: wp-publish-with-buffer.php:328
+msgid "Only the first time the post is published"
+msgstr ""
+
+#: wp-publish-with-buffer.php:306
 msgid "Post excerpt."
 msgstr ""
 
-#: wp-publish-with-buffer.php:324
+#: wp-publish-with-buffer.php:309
 msgid "Post tags (automatically converted to #hashtags)."
 msgstr ""
 
-#: wp-publish-with-buffer.php:319
+#: wp-publish-with-buffer.php:304
 msgid "Post title."
 msgstr ""
 
-#: wp-publish-with-buffer.php:323
+#: wp-publish-with-buffer.php:308
 msgid "Primary category of the post."
 msgstr ""
 
-#: wp-publish-with-buffer.php:32 wp-publish-with-buffer.php:263
-#: wp-publish-with-buffer.php:264
+#: wp-publish-with-buffer.php:32 wp-publish-with-buffer.php:246
+#: wp-publish-with-buffer.php:247
 msgid "Publish with Buffer"
 msgstr ""
 
-#: wp-publish-with-buffer.php:354
+#: wp-publish-with-buffer.php:350
 msgid "Publish with Buffer Settings"
 msgstr ""
 
-#: wp-publish-with-buffer.php:78
+#: wp-publish-with-buffer.php:69
 msgid "Publishing mode:"
 msgstr ""
 
-#: wp-publish-with-buffer.php:359
+#: wp-publish-with-buffer.php:355
 msgid "Save Settings"
 msgstr ""
 
-#: wp-publish-with-buffer.php:73
+#: wp-publish-with-buffer.php:64
 msgid "Send to Buffer on publish"
 msgstr ""
 
-#: wp-publish-with-buffer.php:80 wp-publish-with-buffer.php:332
+#: wp-publish-with-buffer.php:71 wp-publish-with-buffer.php:317
 msgid "Share Now"
 msgstr ""
 
-#: wp-publish-with-buffer.php:47
-msgid "This post has already been published."
+#: wp-publish-with-buffer.php:276
+msgid "Update Behavior"
+msgstr ""
+
+#: wp-publish-with-buffer.php:331
+msgid ""
+"Warning: If you choose \"Every time\", every time you edit a published post "
+"and click \"Update\", a duplicate post will be sent to Buffer."
 msgstr ""
 
 #. Name of the plugin
