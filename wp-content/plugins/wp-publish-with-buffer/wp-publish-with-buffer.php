@@ -1,11 +1,13 @@
 <?php
 /**
- * Plugin Name: WP Buffer GraphQL Publisher
- * Plugin URI:  https://tuweb.com
- * Description: Publica contenido en Buffer utilizando su nueva API GraphQL.
- * Version:     1.0.0
- * Author:      Tu Nombre
+ * Plugin Name: WP Publish with Buffer
+ * Plugin URI:  https://github.com/formatocd/wp-publish-with-buffer
+ * Description: Generates Buffer posts automatically from WordPress posts.
+ * Version:     1.1.0
+ * Author:      Carlos Durán
  * License:     GPL-2.0+
+ * Text Domain: wp-publish-with-buffer
+ * Domain Path: /languages
  */
 
 // Evitar el acceso directo al archivo por seguridad
@@ -13,15 +15,21 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
+// Cargar los archivos de traducción
+add_action( 'plugins_loaded', 'buffer_plugin_load_textdomain' );
+function buffer_plugin_load_textdomain() {
+    load_plugin_textdomain( 'wp-publish-with-buffer', false, dirname( plugin_basename( __FILE__ ) ) . '/languages' );
+}
+
 // ==========================================
-// 1. CÓDIGO DEL META BOX Y DISPARADOR
+// 1. CÓDIGO DEL META BOX
 // ==========================================
 
 add_action( 'add_meta_boxes', 'buffer_plugin_add_meta_box' );
 function buffer_plugin_add_meta_box() {
     add_meta_box(
         'buffer_plugin_meta_box',      
-        'Publicar en Buffer',          
+        __( 'Publish with Buffer', 'wp-publish-with-buffer' ),          
         'buffer_plugin_meta_box_html', 
         'post',                        
         'side',                        
@@ -32,37 +40,44 @@ function buffer_plugin_add_meta_box() {
 function buffer_plugin_meta_box_html( $post ) {
     wp_nonce_field( 'buffer_plugin_save_meta', 'buffer_plugin_meta_nonce' );
 
-    $global_default_mode = get_option( 'buffer_default_mode', 'shareNow' ); 
+    $global_default_mode = get_option( 'buffer_default_mode', '' ); 
+    $has_meta = metadata_exists( 'post', $post->ID, '_buffer_is_active' );
 
-    $is_active = get_post_meta( $post->ID, '_buffer_is_active', true );
-    $mode      = get_post_meta( $post->ID, '_buffer_mode', true );
-    $due_at    = get_post_meta( $post->ID, '_buffer_due_at', true );
-
-    if ( $mode === '' ) {
-        $mode = $global_default_mode;
-        $is_active = 'yes'; 
+    if ( ! $has_meta ) {
+        if ( '' !== $global_default_mode ) {
+            $is_active = 'yes';
+            $mode      = $global_default_mode;
+        } else {
+            $is_active = 'no';       
+            $mode      = 'shareNow'; 
+        }
+        $due_at = '';
+    } else {
+        $is_active = get_post_meta( $post->ID, '_buffer_is_active', true );
+        $mode      = get_post_meta( $post->ID, '_buffer_mode', true );
+        $due_at    = get_post_meta( $post->ID, '_buffer_due_at', true );
     }
     ?>
     <p>
         <label>
             <input type="checkbox" name="buffer_is_active" value="yes" <?php checked( $is_active, 'yes' ); ?> />
-            <strong>Enviar a Buffer al publicar</strong>
+            <strong><?php esc_html_e( 'Send to Buffer on publish', 'wp-publish-with-buffer' ); ?></strong>
         </label>
     </p>
     
     <p>
-        <label for="buffer_mode">Modo de envío:</label>
+        <label for="buffer_mode"><?php esc_html_e( 'Publishing mode:', 'wp-publish-with-buffer' ); ?></label>
         <select name="buffer_mode" id="buffer_mode" style="width: 100%;">
-            <option value="shareNow" <?php selected( $mode, 'shareNow' ); ?>>Inmediato (Share Now)</option>
-            <option value="addToQueue" <?php selected( $mode, 'addToQueue' ); ?>>A la Cola (Add to Queue)</option>
-            <option value="customScheduled" <?php selected( $mode, 'customScheduled' ); ?>>Programado (Custom)</option>
+            <option value="shareNow" <?php selected( $mode, 'shareNow' ); ?>><?php esc_html_e( 'Share Now', 'wp-publish-with-buffer' ); ?></option>
+            <option value="addToQueue" <?php selected( $mode, 'addToQueue' ); ?>><?php esc_html_e( 'Add to Queue', 'wp-publish-with-buffer' ); ?></option>
+            <option value="customScheduled" <?php selected( $mode, 'customScheduled' ); ?>><?php esc_html_e( 'Custom Scheduled', 'wp-publish-with-buffer' ); ?></option>
         </select>
     </p>
 
     <p id="buffer_date_wrapper" style="<?php echo ( $mode === 'customScheduled' ) ? 'display:block;' : 'display:none;'; ?>">
-        <label for="buffer_due_at">Fecha y Hora (UTC):</label>
+        <label for="buffer_due_at"><?php esc_html_e( 'Date and Time (UTC):', 'wp-publish-with-buffer' ); ?></label>
         <input type="datetime-local" name="buffer_due_at" id="buffer_due_at" value="<?php echo esc_attr( $due_at ); ?>" style="width: 100%;" />
-        <small>Formato requerido para Buffer.</small>
+        <small><?php esc_html_e( 'Format required for Buffer.', 'wp-publish-with-buffer' ); ?></small>
     </p>
 
     <script>
@@ -77,6 +92,10 @@ function buffer_plugin_meta_box_html( $post ) {
     </script>
     <?php
 }
+
+// ==========================================
+// 2. LÓGICA DE DISPARO (Manual y Programado)
+// ==========================================
 
 add_action( 'save_post', 'buffer_plugin_save_meta_box_data' );
 function buffer_plugin_save_meta_box_data( $post_id ) {
@@ -96,55 +115,77 @@ function buffer_plugin_save_meta_box_data( $post_id ) {
     if ( isset( $_POST['buffer_due_at'] ) && ! empty( $_POST['buffer_due_at'] ) ) {
         $date = new DateTime( sanitize_text_field( $_POST['buffer_due_at'] ) );
         update_post_meta( $post_id, '_buffer_due_at', $date->format('Y-m-d\TH:i:s\Z') );
+    } else {
+        delete_post_meta( $post_id, '_buffer_due_at' );
     }
 
-    // Lógica de disparo a Buffer
     if ( 'publish' === get_post_status( $post_id ) ) {
-        $already_sent = get_post_meta( $post_id, '_buffer_sent_flag', true );
-        
-        if ( 'yes' === $is_active && 'yes' !== $already_sent ) {
-            update_post_meta( $post_id, '_buffer_sent_flag', 'yes' );
-            buffer_plugin_send_to_buffer( $post_id );
-        }
+        buffer_plugin_check_and_send( $post_id, $is_active );
+    }
+}
+
+add_action( 'publish_future_post', 'buffer_plugin_trigger_scheduled_post' );
+function buffer_plugin_trigger_scheduled_post( $post_id ) {
+    $is_active = get_post_meta( $post_id, '_buffer_is_active', true );
+    buffer_plugin_check_and_send( $post_id, $is_active );
+}
+
+function buffer_plugin_check_and_send( $post_id, $is_active ) {
+    $already_sent = get_post_meta( $post_id, '_buffer_sent_flag', true );
+    $behavior     = get_option( 'buffer_update_behavior', 'first_time' );
+    
+    if ( 'yes' === $is_active && ( 'yes' !== $already_sent || 'always' === $behavior ) ) {
+        update_post_meta( $post_id, '_buffer_sent_flag', 'yes' ); 
+        buffer_plugin_send_to_buffer( $post_id );
     }
 }
 
 // ==========================================
-// 2. CÓDIGO DE LA LLAMADA A LA API
+// 3. CÓDIGO DE LA LLAMADA A LA API
 // ==========================================
 
 function buffer_plugin_send_to_buffer( $post_id ) {
     $post = get_post( $post_id );
     
-    error_log("Buffer API: Iniciando envío para el post ID " . $post_id);
+    error_log("Buffer API: Initiating send for post ID " . $post_id);
 
     $api_token   = get_option( 'buffer_api_token' );
     $channels    = get_option( 'buffer_channels', [] ); 
     $template    = get_option( 'buffer_template', '{title} - {url}' );
     $allowed_cat = get_option( 'buffer_allowed_category', '' ); 
 
-    if ( empty( $api_token ) || empty( $channels ) ) {
-        error_log("Buffer API Error: Faltan credenciales o canales.");
-        return;
-    }
+    if ( empty( $api_token ) || empty( $channels ) ) return;
 
     if ( ! empty( $allowed_cat ) ) {
         $post_categories = wp_get_post_categories( $post_id );
-        if ( ! in_array( $allowed_cat, $post_categories ) ) {
-            error_log("Buffer API: El post no coincide con la categoría permitida.");
-            return; 
-        }
+        if ( ! in_array( $allowed_cat, $post_categories ) ) return; 
     }
 
     $excerpt = has_excerpt( $post_id ) ? get_the_excerpt( $post_id ) : wp_trim_words( $post->post_content, 20 );
+    $author_name = get_the_author_meta( 'display_name', $post->post_author );
+    $categories = get_the_category( $post_id );
+    $category_name = ! empty( $categories ) ? $categories[0]->name : '';
+    
+    $tags = get_the_tags( $post_id );
+    $tags_string = '';
+    if ( $tags ) {
+        $tag_names = wp_list_pluck( $tags, 'name' );
+        $hashtag_array = array_map(function($tag) {
+            return '#' . str_replace(' ', '', $tag);
+        }, $tag_names);
+        $tags_string = implode(' ', $hashtag_array);
+    }
+
     $message = str_replace(
-        ['{title}', '{url}', '{excerpt}'],
-        [$post->post_title, get_permalink( $post_id ), $excerpt],
+        ['{title}', '{url}', '{excerpt}', '{author}', '{category}', '{tags}'],
+        [$post->post_title, get_permalink( $post_id ), $excerpt, $author_name, $category_name, $tags_string],
         $template
     );
 
-    // IMAGEN FIJA PARA PRUEBAS LOCALES
-    $image_url = 'https://images.unsplash.com/photo-1742850541164-8eb59ecb3282?q=80&w=3388&auto=format&fit=crop&ixlib=rb-4.0.3';
+    $image_url = null;
+    if ( has_post_thumbnail( $post_id ) ) {
+        $image_url = get_the_post_thumbnail_url( $post_id, 'full' );
+    }
 
     $mode   = get_post_meta( $post_id, '_buffer_mode', true );
     $due_at = get_post_meta( $post_id, '_buffer_due_at', true );
@@ -190,31 +231,22 @@ function buffer_plugin_send_to_buffer( $post_id ) {
             'body'        => wp_json_encode( $payload ),
             'data_format' => 'body',
             'timeout'     => 15,
-            'blocking'    => true 
+            'blocking'    => false 
         ] );
-
-        if ( is_wp_error( $response ) ) {
-            error_log( "Buffer API HTTP Error: " . $response->get_error_message() );
-        } else {
-            $response_code = wp_remote_retrieve_response_code( $response );
-            $response_body = wp_remote_retrieve_body( $response );
-            error_log( "Buffer API Status Code: $response_code" );
-            error_log( "Buffer API Response: $response_body" );
-        }
     }
 }
 
 // ==========================================
-// 3. PÁGINA DE AJUSTES (Panel de Control)
+// 4. PÁGINA DE AJUSTES (Panel de Control)
 // ==========================================
 
 add_action( 'admin_menu', 'buffer_plugin_add_admin_menu' );
 function buffer_plugin_add_admin_menu() {
     add_menu_page(
-        'Ajustes Buffer GraphQL',         
-        'Buffer GraphQL',                 
+        __( 'Publish with Buffer', 'wp-publish-with-buffer' ),            
+        __( 'Publish with Buffer', 'wp-publish-with-buffer' ),            
         'manage_options',                 
-        'buffer-graphql-settings',        
+        'publish-with-buffer',            
         'buffer_plugin_settings_page_html', 
         'dashicons-share',                
         80                                
@@ -228,19 +260,21 @@ function buffer_plugin_settings_init() {
     register_setting( 'buffer_plugin_settings_group', 'buffer_template' );
     register_setting( 'buffer_plugin_settings_group', 'buffer_allowed_category', 'absint' );
     register_setting( 'buffer_plugin_settings_group', 'buffer_default_mode' );
+    register_setting( 'buffer_plugin_settings_group', 'buffer_update_behavior' );
 
     add_settings_section(
         'buffer_plugin_main_section',
-        'Configuración de la API y Publicación',
+        __( 'API and Publishing Settings', 'wp-publish-with-buffer' ),
         '__return_empty_string', 
-        'buffer-graphql-settings'
+        'publish-with-buffer'
     );
 
-    add_settings_field( 'buffer_api_token', 'API Token de Buffer', 'buffer_plugin_api_token_cb', 'buffer-graphql-settings', 'buffer_plugin_main_section' );
-    add_settings_field( 'buffer_channels', 'IDs de Canales', 'buffer_plugin_channels_cb', 'buffer-graphql-settings', 'buffer_plugin_main_section' );
-    add_settings_field( 'buffer_template', 'Plantilla del Mensaje', 'buffer_plugin_template_cb', 'buffer-graphql-settings', 'buffer_plugin_main_section' );
-    add_settings_field( 'buffer_default_mode', 'Modo de Envío por Defecto', 'buffer_plugin_mode_cb', 'buffer-graphql-settings', 'buffer_plugin_main_section' );
-    add_settings_field( 'buffer_allowed_category', 'Filtrar por Categoría', 'buffer_plugin_category_cb', 'buffer-graphql-settings', 'buffer_plugin_main_section' );
+    add_settings_field( 'buffer_api_token', __( 'Buffer API Token', 'wp-publish-with-buffer' ), 'buffer_plugin_api_token_cb', 'publish-with-buffer', 'buffer_plugin_main_section' );
+    add_settings_field( 'buffer_channels', __( 'Channel IDs', 'wp-publish-with-buffer' ), 'buffer_plugin_channels_cb', 'publish-with-buffer', 'buffer_plugin_main_section' );
+    add_settings_field( 'buffer_template', __( 'Message Template', 'wp-publish-with-buffer' ), 'buffer_plugin_template_cb', 'publish-with-buffer', 'buffer_plugin_main_section' );
+    add_settings_field( 'buffer_default_mode', __( 'Default Publishing Mode', 'wp-publish-with-buffer' ), 'buffer_plugin_mode_cb', 'publish-with-buffer', 'buffer_plugin_main_section' );
+    add_settings_field( 'buffer_update_behavior', __( 'Update Behavior', 'wp-publish-with-buffer' ), 'buffer_plugin_behavior_cb', 'publish-with-buffer', 'buffer_plugin_main_section' );
+    add_settings_field( 'buffer_allowed_category', __( 'Filter by Category', 'wp-publish-with-buffer' ), 'buffer_plugin_category_cb', 'publish-with-buffer', 'buffer_plugin_main_section' );
 }
 
 function buffer_plugin_sanitize_channels( $input ) {
@@ -260,28 +294,48 @@ function buffer_plugin_channels_cb() {
     $val = get_option( 'buffer_channels', [] );
     $val_string = is_array( $val ) ? implode( ', ', $val ) : '';
     echo '<input type="text" name="buffer_channels" value="' . esc_attr( $val_string ) . '" class="regular-text" />';
-    echo '<p class="description">Ejemplo: <code>id_1, id_2</code></p>';
+    echo '<p class="description">' . esc_html__( 'Example:', 'wp-publish-with-buffer' ) . ' <code>id_1, id_2</code></p>';
 }
 
 function buffer_plugin_template_cb() {
     $val = get_option( 'buffer_template', '{title} - {url}' );
     echo '<textarea name="buffer_template" rows="3" class="large-text">' . esc_textarea( $val ) . '</textarea>';
+    echo '<p class="description"><strong>' . esc_html__( 'Available variables:', 'wp-publish-with-buffer' ) . '</strong><br>';
+    echo '<code>{title}</code> : ' . esc_html__( 'Post title.', 'wp-publish-with-buffer' ) . '<br>';
+    echo '<code>{url}</code> : ' . esc_html__( 'Direct link to the post.', 'wp-publish-with-buffer' ) . '<br>';
+    echo '<code>{excerpt}</code> : ' . esc_html__( 'Post excerpt.', 'wp-publish-with-buffer' ) . '<br>';
+    echo '<code>{author}</code> : ' . esc_html__( 'Author public display name.', 'wp-publish-with-buffer' ) . '<br>';
+    echo '<code>{category}</code> : ' . esc_html__( 'Primary category of the post.', 'wp-publish-with-buffer' ) . '<br>';
+    echo '<code>{tags}</code> : ' . esc_html__( 'Post tags (automatically converted to #hashtags).', 'wp-publish-with-buffer' ) . '</p>';
 }
 
 function buffer_plugin_mode_cb() {
-    $val = get_option( 'buffer_default_mode', 'shareNow' );
+    $val = get_option( 'buffer_default_mode', '' ); 
     ?>
     <select name="buffer_default_mode">
-        <option value="shareNow" <?php selected( $val, 'shareNow' ); ?>>Inmediato (Share Now)</option>
-        <option value="addToQueue" <?php selected( $val, 'addToQueue' ); ?>>A la Cola (Add to Queue)</option>
+        <option value="" <?php selected( $val, '' ); ?>><?php esc_html_e( 'None (Disabled on posts)', 'wp-publish-with-buffer' ); ?></option>
+        <option value="shareNow" <?php selected( $val, 'shareNow' ); ?>><?php esc_html_e( 'Share Now', 'wp-publish-with-buffer' ); ?></option>
+        <option value="addToQueue" <?php selected( $val, 'addToQueue' ); ?>><?php esc_html_e( 'Add to Queue', 'wp-publish-with-buffer' ); ?></option>
     </select>
+    <p class="description"><?php esc_html_e( 'If you choose "None", the checkbox in the editor will be unchecked by default.', 'wp-publish-with-buffer' ); ?></p>
+    <?php
+}
+
+function buffer_plugin_behavior_cb() {
+    $val = get_option( 'buffer_update_behavior', 'first_time' ); 
+    ?>
+    <select name="buffer_update_behavior">
+        <option value="first_time" <?php selected( $val, 'first_time' ); ?>><?php esc_html_e( 'Only the first time the post is published', 'wp-publish-with-buffer' ); ?></option>
+        <option value="always" <?php selected( $val, 'always' ); ?>><?php esc_html_e( 'Every time it is published or updated', 'wp-publish-with-buffer' ); ?></option>
+    </select>
+    <p class="description"><?php esc_html_e( 'Warning: If you choose "Every time", every time you edit a published post and click "Update", a duplicate post will be sent to Buffer.', 'wp-publish-with-buffer' ); ?></p>
     <?php
 }
 
 function buffer_plugin_category_cb() {
     $val = get_option( 'buffer_allowed_category', '' );
     $args = [
-        'show_option_all'    => 'Todas las categorías',
+        'show_option_all'    => __( 'All categories', 'wp-publish-with-buffer' ),
         'name'               => 'buffer_allowed_category',
         'selected'           => $val,
         'value_field'        => 'term_id',
@@ -293,12 +347,12 @@ function buffer_plugin_settings_page_html() {
     if ( ! current_user_can( 'manage_options' ) ) return;
     ?>
     <div class="wrap">
-        <h1>Ajustes de Buffer GraphQL</h1>
+        <h1><?php esc_html_e( 'Publish with Buffer Settings', 'wp-publish-with-buffer' ); ?></h1>
         <form action="options.php" method="post">
             <?php
             settings_fields( 'buffer_plugin_settings_group' );
-            do_settings_sections( 'buffer-graphql-settings' );
-            submit_button( 'Guardar Configuración' );
+            do_settings_sections( 'publish-with-buffer' );
+            submit_button( __( 'Save Settings', 'wp-publish-with-buffer' ) );
             ?>
         </form>
     </div>
