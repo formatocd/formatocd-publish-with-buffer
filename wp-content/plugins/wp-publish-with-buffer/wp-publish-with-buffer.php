@@ -10,20 +10,14 @@
  * Domain Path: /languages
  */
 
-// Evitar el acceso directo al archivo por seguridad
 if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-// Cargar los archivos de traducción
 add_action( 'plugins_loaded', 'buffer_plugin_load_textdomain' );
 function buffer_plugin_load_textdomain() {
     load_plugin_textdomain( 'wp-publish-with-buffer', false, dirname( plugin_basename( __FILE__ ) ) . '/languages' );
 }
-
-// ==========================================
-// 1. CÓDIGO DEL META BOX
-// ==========================================
 
 add_action( 'add_meta_boxes', 'buffer_plugin_add_meta_box' );
 function buffer_plugin_add_meta_box() {
@@ -42,7 +36,6 @@ function buffer_plugin_meta_box_html( $post ) {
 
     $already_sent = get_post_meta( $post->ID, '_buffer_sent_flag', true );
 
-    // LÓGICA UX: Si ya se ha enviado, mostramos un aviso y ocultamos el formulario
     if ( 'yes' === $already_sent ) {
         echo '<p><span class="dashicons dashicons-yes-alt" style="color: #46b450;"></span> <strong>' . esc_html__( 'This post has already been published.', 'wp-publish-with-buffer' ) . '</strong></p>';
         return;
@@ -102,10 +95,6 @@ function buffer_plugin_meta_box_html( $post ) {
     <?php
 }
 
-// ==========================================
-// 2. LÓGICA DE DISPARO (Manual y Programado)
-// ==========================================
-
 add_action( 'save_post', 'buffer_plugin_save_meta_box_data' );
 function buffer_plugin_save_meta_box_data( $post_id ) {
     if ( ! isset( $_POST['buffer_plugin_meta_nonce'] ) || ! wp_verify_nonce( $_POST['buffer_plugin_meta_nonce'], 'buffer_plugin_save_meta' ) ) {
@@ -115,7 +104,6 @@ function buffer_plugin_save_meta_box_data( $post_id ) {
     if ( wp_is_post_revision( $post_id ) ) return; 
     if ( ! current_user_can( 'edit_post', $post_id ) ) return;
 
-    // Si ya se envió, bloqueamos cualquier intento de guardar nuevos datos de Buffer
     $already_sent = get_post_meta( $post_id, '_buffer_sent_flag', true );
     if ( 'yes' === $already_sent ) {
         return;
@@ -149,16 +137,11 @@ function buffer_plugin_trigger_scheduled_post( $post_id ) {
 function buffer_plugin_check_and_send( $post_id, $is_active ) {
     $already_sent = get_post_meta( $post_id, '_buffer_sent_flag', true );
     
-    // Simplificado: Solo se envía si está activo y NUNCA se ha enviado antes
     if ( 'yes' === $is_active && 'yes' !== $already_sent ) {
         update_post_meta( $post_id, '_buffer_sent_flag', 'yes' ); 
         buffer_plugin_send_to_buffer( $post_id );
     }
 }
-
-// ==========================================
-// 3. CÓDIGO DE LA LLAMADA A LA API
-// ==========================================
 
 function buffer_plugin_send_to_buffer( $post_id ) {
     $post = get_post( $post_id );
@@ -196,7 +179,6 @@ function buffer_plugin_send_to_buffer( $post_id ) {
         $template
     );
 
-    // IMAGEN REAL DINÁMICA DE PRODUCCIÓN
     $image_url = null;
     if ( has_post_thumbnail( $post_id ) ) {
         $image_url = get_the_post_thumbnail_url( $post_id, 'full' );
@@ -239,7 +221,6 @@ function buffer_plugin_send_to_buffer( $post_id ) {
             'variables' => [ 'input' => $input_vars ]
         ];
 
-        // Cambiado a false para producción (mayor velocidad de carga al publicar)
         wp_remote_post( 'https://api.buffer.com', [
             'headers'     => [
                 'Content-Type'  => 'application/json',
@@ -252,10 +233,6 @@ function buffer_plugin_send_to_buffer( $post_id ) {
         ] );
     }
 }
-
-// ==========================================
-// 4. PÁGINA DE AJUSTES (Panel de Control)
-// ==========================================
 
 add_action( 'admin_menu', 'buffer_plugin_add_admin_menu' );
 function buffer_plugin_add_admin_menu() {
