@@ -1,0 +1,148 @@
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: WP Publish with Buffer\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-03-01 23:01+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: \n"
+"Language: \n"
+"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Loco https://localise.biz/\n"
+"X-Loco-Version: 2.8.2; wp-6.9.1; php-8.4.16\n"
+"X-Domain: publish-with-buffer"
+
+#: publish-with-buffer.php:81 publish-with-buffer.php:333
+msgid "Add to Queue"
+msgstr ""
+
+#: publish-with-buffer.php:342
+msgid "All categories"
+msgstr ""
+
+#: publish-with-buffer.php:283
+msgid "API and Publishing Settings"
+msgstr ""
+
+#: publish-with-buffer.php:322
+msgid "Author public display name."
+msgstr ""
+
+#: publish-with-buffer.php:318
+msgid "Available variables:"
+msgstr ""
+
+#: publish-with-buffer.php:288
+msgid "Buffer API Token"
+msgstr ""
+
+#. Author of the plugin
+msgid "Carlos Durán"
+msgstr ""
+
+#: publish-with-buffer.php:289
+msgid "Channel IDs"
+msgstr ""
+
+#: publish-with-buffer.php:82
+msgid "Custom Scheduled"
+msgstr ""
+
+#: publish-with-buffer.php:87
+msgid "Date and Time (UTC):"
+msgstr ""
+
+#: publish-with-buffer.php:291
+msgid "Default Publishing Mode"
+msgstr ""
+
+#: publish-with-buffer.php:320
+msgid "Direct link to the post."
+msgstr ""
+
+#: publish-with-buffer.php:312
+msgid "Example:"
+msgstr ""
+
+#: publish-with-buffer.php:292
+msgid "Filter by Category"
+msgstr ""
+
+#: publish-with-buffer.php:89
+msgid "Format required for Buffer."
+msgstr ""
+
+#. Description of the plugin
+msgid "Generates Buffer posts automatically from WordPress posts."
+msgstr ""
+
+#. URI of the plugin
+msgid "https://github.com/formatocd/publish-with-buffer"
+msgstr ""
+
+#: publish-with-buffer.php:335
+msgid ""
+"If you choose \"None\", the checkbox in the editor will be unchecked by "
+"default."
+msgstr ""
+
+#: publish-with-buffer.php:290
+msgid "Message Template"
+msgstr ""
+
+#: publish-with-buffer.php:331
+msgid "None (Disabled on posts)"
+msgstr ""
+
+#: publish-with-buffer.php:321
+msgid "Post excerpt."
+msgstr ""
+
+#: publish-with-buffer.php:324
+msgid "Post tags (automatically converted to #hashtags)."
+msgstr ""
+
+#: publish-with-buffer.php:319
+msgid "Post title."
+msgstr ""
+
+#: publish-with-buffer.php:323
+msgid "Primary category of the post."
+msgstr ""
+
+#: publish-with-buffer.php:32 publish-with-buffer.php:263
+#: publish-with-buffer.php:264
+msgid "Publish with Buffer"
+msgstr ""
+
+#: publish-with-buffer.php:354
+msgid "Publish with Buffer Settings"
+msgstr ""
+
+#: publish-with-buffer.php:78
+msgid "Publishing mode:"
+msgstr ""
+
+#: publish-with-buffer.php:359
+msgid "Save Settings"
+msgstr ""
+
+#: publish-with-buffer.php:73
+msgid "Send to Buffer on publish"
+msgstr ""
+
+#: publish-with-buffer.php:80 publish-with-buffer.php:332
+msgid "Share Now"
+msgstr ""
+
+#: publish-with-buffer.php:47
+msgid "This post has already been published."
+msgstr ""
+
+#. Name of the plugin
+msgid "WP Publish with Buffer"
+msgstr ""
