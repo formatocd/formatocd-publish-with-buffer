@@ -1,7 +1,8 @@
 /*
+!README.md
 !/.gitignore
 !/wp-content/
 /wp-content/*
 !/wp-content/plugins/
 /wp-content/plugins/*
-!/wp-content/plugins/wp-publish-with-buffer/
+!/wp-content/plugins/publish-with-buffer/
