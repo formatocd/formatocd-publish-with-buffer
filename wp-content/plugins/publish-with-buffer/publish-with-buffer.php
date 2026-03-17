@@ -77,17 +77,21 @@ function buffer_plugin_meta_box_html( $post ) {
         <small><?php esc_html_e( 'Format required for Buffer.', 'publish-with-buffer' ); ?></small>
     </p>
 
-    <script>
-        document.getElementById('buffer_mode').addEventListener('change', function() {
-            var dateWrapper = document.getElementById('buffer_date_wrapper');
-            if (this.value === 'customScheduled') {
-                dateWrapper.style.display = 'block';
-            } else {
-                dateWrapper.style.display = 'none';
-            }
-        });
-    </script>
     <?php
+}
+
+add_action( 'admin_enqueue_scripts', 'buffer_plugin_enqueue_admin_scripts' );
+function buffer_plugin_enqueue_admin_scripts( $hook ) {
+    if ( 'post.php' !== $hook && 'post-new.php' !== $hook ) {
+        return;
+    }
+    wp_enqueue_script( 
+        'buffer-admin-script', 
+        plugins_url( 'js/buffer-admin.js', __FILE__ ), 
+        array(), 
+        '1.0.0', 
+        true 
+    );
 }
 
 add_action( 'save_post', 'buffer_plugin_save_meta_box_data' );
