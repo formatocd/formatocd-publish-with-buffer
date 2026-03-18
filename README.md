@@ -1,4 +1,4 @@
-# WP Publish with Buffer
+# FormatoCD Publish with Buffer
 
 ![WordPress](https://img.shields.io/badge/WordPress-%23117B85.svg?style=for-the-badge&logo=wordpress&logoColor=white)
 ![PHP](https://img.shields.io/badge/php-%23777BB4.svg?style=for-the-badge&logo=php&logoColor=white)
@@ -33,7 +33,7 @@ A WordPress plugin that automates the publishing of posts to your social media c
 3. Select the downloaded `.zip` file and click **Install Now**.
 4. Once installed, click **Activate**.
 
-*Alternatively, you can extract the `.zip` file and upload the `wp-publish-with-buffer` folder directly to your `/wp-content/plugins/` directory via FTP.*
+*Alternatively, you can extract the `.zip` file and upload the `formatocd-publish-with-buffer` folder directly to your `/wp-content/plugins/` directory via FTP.*
 
 ## ⚙️ Configuration and Usage
 

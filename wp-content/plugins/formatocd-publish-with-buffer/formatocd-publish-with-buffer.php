@@ -1,12 +1,12 @@
 <?php
 /**
- * Plugin Name: Publish with Buffer
- * Plugin URI:  https://github.com/formatocd/publish-with-buffer
+ * Plugin Name: FormatoCD Publish with Buffer
+ * Plugin URI:  https://github.com/formatocd/formatocd-publish-with-buffer
  * Description: Generates Buffer posts automatically from WordPress posts.
  * Version:     1.0.0
  * Author:      Carlos Durán
  * License:     GPL-2.0+
- * Text Domain: publish-with-buffer
+ * Text Domain: formatocd-publish-with-buffer
  * Domain Path: /languages
  */
 
@@ -18,7 +18,7 @@ add_action( 'add_meta_boxes', 'buffer_plugin_add_meta_box' );
 function buffer_plugin_add_meta_box() {
     add_meta_box(
         'buffer_plugin_meta_box',      
-        __( 'Publish with Buffer', 'publish-with-buffer' ),          
+        __( 'FormatoCD Publish with Buffer', 'formatocd-publish-with-buffer' ),          
         'buffer_plugin_meta_box_html', 
         'post',                        
         'side',                        
@@ -32,7 +32,7 @@ function buffer_plugin_meta_box_html( $post ) {
     $already_sent = get_post_meta( $post->ID, '_buffer_sent_flag', true );
 
     if ( 'yes' === $already_sent ) {
-        echo '<p><span class="dashicons dashicons-yes-alt" style="color: #46b450;"></span> <strong>' . esc_html__( 'This post has already been published to Buffer.', 'publish-with-buffer' ) . '</strong></p>';
+        echo '<p><span class="dashicons dashicons-yes-alt" style="color: #46b450;"></span> <strong>' . esc_html__( 'This post has already been published to Buffer.', 'formatocd-publish-with-buffer' ) . '</strong></p>';
         return;
     }
 
@@ -58,23 +58,23 @@ function buffer_plugin_meta_box_html( $post ) {
     <p>
         <label>
             <input type="checkbox" name="buffer_is_active" value="yes" <?php checked( $is_active, 'yes' ); ?> />
-            <strong><?php esc_html_e( 'Send to Buffer on publish', 'publish-with-buffer' ); ?></strong>
+            <strong><?php esc_html_e( 'Send to Buffer on publish', 'formatocd-publish-with-buffer' ); ?></strong>
         </label>
     </p>
     
     <p>
-        <label for="buffer_mode"><?php esc_html_e( 'Publishing mode:', 'publish-with-buffer' ); ?></label>
+        <label for="buffer_mode"><?php esc_html_e( 'Publishing mode:', 'formatocd-publish-with-buffer' ); ?></label>
         <select name="buffer_mode" id="buffer_mode" style="width: 100%;">
-            <option value="shareNow" <?php selected( $mode, 'shareNow' ); ?>><?php esc_html_e( 'Share Now', 'publish-with-buffer' ); ?></option>
-            <option value="addToQueue" <?php selected( $mode, 'addToQueue' ); ?>><?php esc_html_e( 'Add to Queue', 'publish-with-buffer' ); ?></option>
-            <option value="customScheduled" <?php selected( $mode, 'customScheduled' ); ?>><?php esc_html_e( 'Custom Scheduled', 'publish-with-buffer' ); ?></option>
+            <option value="shareNow" <?php selected( $mode, 'shareNow' ); ?>><?php esc_html_e( 'Share Now', 'formatocd-publish-with-buffer' ); ?></option>
+            <option value="addToQueue" <?php selected( $mode, 'addToQueue' ); ?>><?php esc_html_e( 'Add to Queue', 'formatocd-publish-with-buffer' ); ?></option>
+            <option value="customScheduled" <?php selected( $mode, 'customScheduled' ); ?>><?php esc_html_e( 'Custom Scheduled', 'formatocd-publish-with-buffer' ); ?></option>
         </select>
     </p>
 
     <p id="buffer_date_wrapper" style="<?php echo ( $mode === 'customScheduled' ) ? 'display:block;' : 'display:none;'; ?>">
-        <label for="buffer_due_at"><?php esc_html_e( 'Date and Time (UTC):', 'publish-with-buffer' ); ?></label>
+        <label for="buffer_due_at"><?php esc_html_e( 'Date and Time (UTC):', 'formatocd-publish-with-buffer' ); ?></label>
         <input type="datetime-local" name="buffer_due_at" id="buffer_due_at" value="<?php echo esc_attr( $due_at ); ?>" style="width: 100%;" />
-        <small><?php esc_html_e( 'Format required for Buffer.', 'publish-with-buffer' ); ?></small>
+        <small><?php esc_html_e( 'Format required for Buffer.', 'formatocd-publish-with-buffer' ); ?></small>
     </p>
 
     <?php
@@ -235,10 +235,10 @@ function buffer_plugin_send_to_buffer( $post_id ) {
 add_action( 'admin_menu', 'buffer_plugin_add_admin_menu' );
 function buffer_plugin_add_admin_menu() {
     add_menu_page(
-        __( 'Publish with Buffer', 'publish-with-buffer' ),            
-        __( 'Publish with Buffer', 'publish-with-buffer' ),            
+        __( 'FormatoCD Publish with Buffer', 'formatocd-publish-with-buffer' ),            
+        __( 'FormatoCD Publish with Buffer', 'formatocd-publish-with-buffer' ),            
         'manage_options',                 
-        'publish-with-buffer',            
+        'formatocd-publish-with-buffer',            
         'buffer_plugin_settings_page_html', 
         'dashicons-share',                
         80                                
@@ -255,16 +255,16 @@ function buffer_plugin_settings_init() {
 
     add_settings_section(
         'buffer_plugin_main_section',
-        __( 'API and Publishing Settings', 'publish-with-buffer' ),
+        __( 'API and Publishing Settings', 'formatocd-publish-with-buffer' ),
         '__return_empty_string', 
-        'publish-with-buffer'
+        'formatocd-publish-with-buffer'
     );
 
-    add_settings_field( 'buffer_api_token', __( 'Buffer API Token', 'publish-with-buffer' ), 'buffer_plugin_api_token_cb', 'publish-with-buffer', 'buffer_plugin_main_section' );
-    add_settings_field( 'buffer_channels', __( 'Channel IDs', 'publish-with-buffer' ), 'buffer_plugin_channels_cb', 'publish-with-buffer', 'buffer_plugin_main_section' );
-    add_settings_field( 'buffer_template', __( 'Message Template', 'publish-with-buffer' ), 'buffer_plugin_template_cb', 'publish-with-buffer', 'buffer_plugin_main_section' );
-    add_settings_field( 'buffer_default_mode', __( 'Default Publishing Mode', 'publish-with-buffer' ), 'buffer_plugin_mode_cb', 'publish-with-buffer', 'buffer_plugin_main_section' );
-    add_settings_field( 'buffer_allowed_category', __( 'Filter by Category', 'publish-with-buffer' ), 'buffer_plugin_category_cb', 'publish-with-buffer', 'buffer_plugin_main_section' );
+    add_settings_field( 'buffer_api_token', __( 'Buffer API Token', 'formatocd-publish-with-buffer' ), 'buffer_plugin_api_token_cb', 'formatocd-publish-with-buffer', 'buffer_plugin_main_section' );
+    add_settings_field( 'buffer_channels', __( 'Channel IDs', 'formatocd-publish-with-buffer' ), 'buffer_plugin_channels_cb', 'formatocd-publish-with-buffer', 'buffer_plugin_main_section' );
+    add_settings_field( 'buffer_template', __( 'Message Template', 'formatocd-publish-with-buffer' ), 'buffer_plugin_template_cb', 'formatocd-publish-with-buffer', 'buffer_plugin_main_section' );
+    add_settings_field( 'buffer_default_mode', __( 'Default Publishing Mode', 'formatocd-publish-with-buffer' ), 'buffer_plugin_mode_cb', 'formatocd-publish-with-buffer', 'buffer_plugin_main_section' );
+    add_settings_field( 'buffer_allowed_category', __( 'Filter by Category', 'formatocd-publish-with-buffer' ), 'buffer_plugin_category_cb', 'formatocd-publish-with-buffer', 'buffer_plugin_main_section' );
 }
 
 function buffer_plugin_sanitize_channels( $input ) {
@@ -284,37 +284,37 @@ function buffer_plugin_channels_cb() {
     $val = get_option( 'buffer_channels', [] );
     $val_string = is_array( $val ) ? implode( ', ', $val ) : '';
     echo '<input type="text" name="buffer_channels" value="' . esc_attr( $val_string ) . '" class="regular-text" />';
-    echo '<p class="description">' . esc_html__( 'Example:', 'publish-with-buffer' ) . ' <code>id_1, id_2</code></p>';
+    echo '<p class="description">' . esc_html__( 'Example:', 'formatocd-publish-with-buffer' ) . ' <code>id_1, id_2</code></p>';
 }
 
 function buffer_plugin_template_cb() {
     $val = get_option( 'buffer_template', '{title} - {url}' );
     echo '<textarea name="buffer_template" rows="3" class="large-text">' . esc_textarea( $val ) . '</textarea>';
-    echo '<p class="description"><strong>' . esc_html__( 'Available variables:', 'publish-with-buffer' ) . '</strong><br>';
-    echo '<code>{title}</code> : ' . esc_html__( 'Post title.', 'publish-with-buffer' ) . '<br>';
-    echo '<code>{url}</code> : ' . esc_html__( 'Direct link to the post.', 'publish-with-buffer' ) . '<br>';
-    echo '<code>{excerpt}</code> : ' . esc_html__( 'Post excerpt.', 'publish-with-buffer' ) . '<br>';
-    echo '<code>{author}</code> : ' . esc_html__( 'Author public display name.', 'publish-with-buffer' ) . '<br>';
-    echo '<code>{category}</code> : ' . esc_html__( 'Primary category of the post.', 'publish-with-buffer' ) . '<br>';
-    echo '<code>{tags}</code> : ' . esc_html__( 'Post tags (automatically converted to #hashtags).', 'publish-with-buffer' ) . '</p>';
+    echo '<p class="description"><strong>' . esc_html__( 'Available variables:', 'formatocd-publish-with-buffer' ) . '</strong><br>';
+    echo '<code>{title}</code> : ' . esc_html__( 'Post title.', 'formatocd-publish-with-buffer' ) . '<br>';
+    echo '<code>{url}</code> : ' . esc_html__( 'Direct link to the post.', 'formatocd-publish-with-buffer' ) . '<br>';
+    echo '<code>{excerpt}</code> : ' . esc_html__( 'Post excerpt.', 'formatocd-publish-with-buffer' ) . '<br>';
+    echo '<code>{author}</code> : ' . esc_html__( 'Author public display name.', 'formatocd-publish-with-buffer' ) . '<br>';
+    echo '<code>{category}</code> : ' . esc_html__( 'Primary category of the post.', 'formatocd-publish-with-buffer' ) . '<br>';
+    echo '<code>{tags}</code> : ' . esc_html__( 'Post tags (automatically converted to #hashtags).', 'formatocd-publish-with-buffer' ) . '</p>';
 }
 
 function buffer_plugin_mode_cb() {
     $val = get_option( 'buffer_default_mode', '' ); 
     ?>
     <select name="buffer_default_mode">
-        <option value="" <?php selected( $val, '' ); ?>><?php esc_html_e( 'None (Disabled on posts)', 'publish-with-buffer' ); ?></option>
-        <option value="shareNow" <?php selected( $val, 'shareNow' ); ?>><?php esc_html_e( 'Share Now', 'publish-with-buffer' ); ?></option>
-        <option value="addToQueue" <?php selected( $val, 'addToQueue' ); ?>><?php esc_html_e( 'Add to Queue', 'publish-with-buffer' ); ?></option>
+        <option value="" <?php selected( $val, '' ); ?>><?php esc_html_e( 'None (Disabled on posts)', 'formatocd-publish-with-buffer' ); ?></option>
+        <option value="shareNow" <?php selected( $val, 'shareNow' ); ?>><?php esc_html_e( 'Share Now', 'formatocd-publish-with-buffer' ); ?></option>
+        <option value="addToQueue" <?php selected( $val, 'addToQueue' ); ?>><?php esc_html_e( 'Add to Queue', 'formatocd-publish-with-buffer' ); ?></option>
     </select>
-    <p class="description"><?php esc_html_e( 'If you choose "None", the checkbox in the editor will be unchecked by default.', 'publish-with-buffer' ); ?></p>
+    <p class="description"><?php esc_html_e( 'If you choose "None", the checkbox in the editor will be unchecked by default.', 'formatocd-publish-with-buffer' ); ?></p>
     <?php
 }
 
 function buffer_plugin_category_cb() {
     $val = get_option( 'buffer_allowed_category', '' );
     $args = [
-        'show_option_all'    => __( 'All categories', 'publish-with-buffer' ),
+        'show_option_all'    => __( 'All categories', 'formatocd-publish-with-buffer' ),
         'name'               => 'buffer_allowed_category',
         'selected'           => $val,
         'value_field'        => 'term_id',
@@ -326,12 +326,12 @@ function buffer_plugin_settings_page_html() {
     if ( ! current_user_can( 'manage_options' ) ) return;
     ?>
     <div class="wrap">
-        <h1><?php esc_html_e( 'Publish with Buffer Settings', 'publish-with-buffer' ); ?></h1>
+        <h1><?php esc_html_e( 'FormatoCD Publish with Buffer Settings', 'formatocd-publish-with-buffer' ); ?></h1>
         <form action="options.php" method="post">
             <?php
             settings_fields( 'buffer_plugin_settings_group' );
-            do_settings_sections( 'publish-with-buffer' );
-            submit_button( __( 'Save Settings', 'publish-with-buffer' ) );
+            do_settings_sections( 'formatocd-publish-with-buffer' );
+            submit_button( __( 'Save Settings', 'formatocd-publish-with-buffer' ) );
             ?>
         </form>
     </div>
