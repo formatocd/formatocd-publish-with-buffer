@@ -248,7 +248,13 @@ function buffer_plugin_add_admin_menu() {
 add_action( 'admin_init', 'buffer_plugin_settings_init' );
 function buffer_plugin_settings_init() {
     register_setting( 'buffer_plugin_settings_group', 'buffer_api_token', 'sanitize_text_field' );
-    register_setting( 'buffer_plugin_settings_group', 'buffer_channels', 'buffer_plugin_sanitize_channels' );
+    register_setting( 'buffer_plugin_settings_group',
+        'buffer_channels',
+        array(
+            'type'              => 'string',
+            'sanitize_callback' => 'buffer_plugin_sanitize_channels',
+        )
+    );
     register_setting( 'buffer_plugin_settings_group', 'buffer_template', 'sanitize_textarea_field' );
     register_setting( 'buffer_plugin_settings_group', 'buffer_allowed_category', 'absint' );
     register_setting( 'buffer_plugin_settings_group', 'buffer_default_mode', 'sanitize_text_field' );
@@ -268,10 +274,12 @@ function buffer_plugin_settings_init() {
 }
 
 function buffer_plugin_sanitize_channels( $input ) {
-    if ( is_array( $input ) ) return $input;
-    $channels = explode( ',', $input );
-    $channels = array_map( 'trim', $channels );
+    if ( ! is_array( $input ) ) {
+        $input = explode( ',', $input );
+    }
+    $channels = array_map( 'trim', $input );
     $channels = array_map( 'sanitize_text_field', $channels );
+    
     return array_filter( $channels ); 
 }
 
