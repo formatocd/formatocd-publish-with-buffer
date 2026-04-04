@@ -1,9 +1,9 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: WP Publish with Buffer\n"
+"Project-Id-Version: FormatoCD Publish with Buffer\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-03-01 21:46+0000\n"
-"PO-Revision-Date: 2026-03-01 23:02+0000\n"
+"PO-Revision-Date: 2026-03-18 22:30+0000\n"
 "Last-Translator: \n"
 "Language-Team: Español\n"
 "Language: es_ES\n"
@@ -13,29 +13,29 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: Loco https://localise.biz/\n"
 "X-Loco-Version: 2.8.2; wp-6.9.1; php-8.4.16\n"
-"X-Domain: publish-with-buffer"
+"X-Domain: formatocd-publish-with-buffer"
 
-#: publish-with-buffer.php:81 publish-with-buffer.php:333
+#: formatocd-publish-with-buffer.php:69 formatocd-publish-with-buffer.php:308
 msgid "Add to Queue"
 msgstr "Añadir a la cola"
 
-#: publish-with-buffer.php:342
+#: formatocd-publish-with-buffer.php:317
 msgid "All categories"
 msgstr "Todas las categorías"
 
-#: publish-with-buffer.php:283
+#: formatocd-publish-with-buffer.php:258
 msgid "API and Publishing Settings"
 msgstr "Ajustes de API y publicación"
 
-#: publish-with-buffer.php:322
+#: formatocd-publish-with-buffer.php:297
 msgid "Author public display name."
 msgstr "Nombre público del autor"
 
-#: publish-with-buffer.php:318
+#: formatocd-publish-with-buffer.php:293
 msgid "Available variables:"
 msgstr "Variables disponibles:"
 
-#: publish-with-buffer.php:288
+#: formatocd-publish-with-buffer.php:263
 msgid "Buffer API Token"
 msgstr "Token del API de Buffer"
 
@@ -43,47 +43,59 @@ msgstr "Token del API de Buffer"
 msgid "Carlos Durán"
 msgstr "Carlos Durán"
 
-#: publish-with-buffer.php:289
+#: formatocd-publish-with-buffer.php:264
 msgid "Channel IDs"
 msgstr "ID's de los canales"
 
-#: publish-with-buffer.php:82
+#: formatocd-publish-with-buffer.php:70
 msgid "Custom Scheduled"
 msgstr "Programación personalizada"
 
-#: publish-with-buffer.php:87
+#: formatocd-publish-with-buffer.php:75
 msgid "Date and Time (UTC):"
 msgstr "Fecha y Hora (UTC):"
 
-#: publish-with-buffer.php:291
+#: formatocd-publish-with-buffer.php:266
 msgid "Default Publishing Mode"
 msgstr "Modo de publicación por defecto"
 
-#: publish-with-buffer.php:320
+#: formatocd-publish-with-buffer.php:295
 msgid "Direct link to the post."
 msgstr "Enlace directo a la publicación."
 
-#: publish-with-buffer.php:312
+#: formatocd-publish-with-buffer.php:287
 msgid "Example:"
 msgstr "Ejemplo:"
 
-#: publish-with-buffer.php:292
+#: formatocd-publish-with-buffer.php:267
 msgid "Filter by Category"
 msgstr "Filtrar por Categoría:"
 
-#: publish-with-buffer.php:89
+#: formatocd-publish-with-buffer.php:77
 msgid "Format required for Buffer."
 msgstr "Formato requerido por Buffer."
+
+#. Name of the plugin
+#: formatocd-publish-with-buffer.php:21 formatocd-publish-with-buffer.php:238
+#: formatocd-publish-with-buffer.php:239
+msgid "FormatoCD Publish with Buffer"
+msgstr "FormatoCD Publicar con Buffer"
+
+#: formatocd-publish-with-buffer.php:329
+#, fuzzy
+#| msgid "ForrmatoCD Publish with Buffer Settings"
+msgid "FormatoCD Publish with Buffer Settings"
+msgstr "FormatoCD Publicar con los ajustes de Buffer"
 
 #. Description of the plugin
 msgid "Generates Buffer posts automatically from WordPress posts."
 msgstr "Genera entradas de Buffer desde las publicaciones de Wordpress"
 
 #. URI of the plugin
-msgid "https://github.com/formatocd/publish-with-buffer"
-msgstr "https://github.com/formatocd/publish-with-buffer"
+msgid "https://github.com/formatocd/formatocd-publish-with-buffer"
+msgstr "https://github.com/formatocd/formatocd-publish-with-buffer"
 
-#: publish-with-buffer.php:335
+#: formatocd-publish-with-buffer.php:310
 msgid ""
 "If you choose \"None\", the checkbox in the editor will be unchecked by "
 "default."
@@ -91,60 +103,49 @@ msgstr ""
 "Si selecciona \"Ninguno\", la casilla en el editor estará sin marcar por "
 "defecto."
 
-#: publish-with-buffer.php:290
+#: formatocd-publish-with-buffer.php:265
 msgid "Message Template"
 msgstr "Plantilla de mensaje"
 
-#: publish-with-buffer.php:331
+#: formatocd-publish-with-buffer.php:306
 msgid "None (Disabled on posts)"
 msgstr "Ninguno (Desactivado en los posts)"
 
-#: publish-with-buffer.php:321
+#: formatocd-publish-with-buffer.php:296
 msgid "Post excerpt."
 msgstr "Extracto del artículo."
 
-#: publish-with-buffer.php:324
+#: formatocd-publish-with-buffer.php:299
 msgid "Post tags (automatically converted to #hashtags)."
 msgstr ""
 "Etiquetas de las publicaciones (se convierten automáticamente a #hashtags)."
 
-#: publish-with-buffer.php:319
+#: formatocd-publish-with-buffer.php:294
 msgid "Post title."
 msgstr "Título del artículo."
 
-#: publish-with-buffer.php:323
+#: formatocd-publish-with-buffer.php:298
 msgid "Primary category of the post."
 msgstr "Categoría principal del artículo."
 
-#: publish-with-buffer.php:32 publish-with-buffer.php:263
-#: publish-with-buffer.php:264
-msgid "Publish with Buffer"
-msgstr "Publicar con Buffer"
-
-#: publish-with-buffer.php:354
-msgid "Publish with Buffer Settings"
-msgstr "Publicar con los ajustes de Buffer"
-
-#: publish-with-buffer.php:78
+#: formatocd-publish-with-buffer.php:66
 msgid "Publishing mode:"
 msgstr "Modo de publicación:"
 
-#: publish-with-buffer.php:359
+#: formatocd-publish-with-buffer.php:334
 msgid "Save Settings"
 msgstr "Guardar ajustes"
 
-#: publish-with-buffer.php:73
+#: formatocd-publish-with-buffer.php:61
 msgid "Send to Buffer on publish"
 msgstr "Enviar a Buffer al publicar"
 
-#: publish-with-buffer.php:80 publish-with-buffer.php:332
+#: formatocd-publish-with-buffer.php:68 formatocd-publish-with-buffer.php:307
 msgid "Share Now"
 msgstr "Compartir ahora"
 
-#: publish-with-buffer.php:47
-msgid "This post has already been published."
+#: formatocd-publish-with-buffer.php:35
+#, fuzzy
+#| msgid "This post has already been published."
+msgid "This post has already been published to Buffer."
 msgstr "Esta artículo ya ha sido publicado."
-
-#. Name of the plugin
-msgid "WP Publish with Buffer"
-msgstr "WP Publish with Buffer"

@@ -1,4 +1,4 @@
-=== Publish with Buffer ===
+=== FormatoCD Publish with Buffer ===
 Contributors: formatocd
 Tags: buffer, social media, auto publish, schedule, graphql
 Requires at least: 5.8
@@ -12,7 +12,7 @@ Generates Buffer posts automatically from WordPress posts. Connect your site to 
 
 == Description ==
 
-Publish with Buffer is a powerful, lightweight plugin that automates the publishing of your WordPress posts to your social media channels using the modern Buffer GraphQL API. 
+FormatoCD Publish with Buffer is a powerful, lightweight plugin that automates the publishing of your WordPress posts to your social media channels using the modern Buffer GraphQL API. 
 
 Stop copying and pasting links! With this plugin, you can easily share your content across multiple social networks as soon as you hit "Publish", or schedule them to be added to your Buffer queue.
 
@@ -30,10 +30,30 @@ Stop copying and pasting links! With this plugin, you can easily share your cont
 
 == Installation ==
 
-1. Upload the `publish-with-buffer` folder to the `/wp-content/plugins/` directory.
+1. Upload the `formatocd-publish-with-buffer` folder to the `/wp-content/plugins/` directory.
 2. Activate the plugin through the 'Plugins' menu in WordPress.
 3. Navigate to **Settings > Publish with Buffer** to configure your API Token and Channels.
 4. Go to any Post and look for the "Publish with Buffer" meta box in the sidebar to start sharing.
+
+== External Services ==
+
+This plugin connects to the third-party Buffer GraphQL API (https://api.buffer.com) to automatically publish or schedule your social media posts.
+
+Data is sent to Buffer ONLY when a WordPress post is published (or automatically published via WordPress cron) and the user has actively checked the "Send to Buffer on publish" option.
+
+The specific data sent to the Buffer API includes:
+* Post Title
+* Post URL
+* Post Excerpt
+* Author Display Name
+* Post Categories and Tags (formatted as #hashtags)
+* Featured Image URL
+
+This service is provided by Buffer. By using this plugin, you agree to their legal terms:
+* Buffer Terms of Service: https://buffer.com/legal/terms
+* Buffer Privacy Policy: https://buffer.com/legal/privacy
+
+API Documentacion can be found here: https://developers.buffer.com
 
 == Frequently Asked Questions ==
 
