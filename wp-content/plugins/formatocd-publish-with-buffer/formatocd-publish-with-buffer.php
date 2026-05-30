@@ -210,7 +210,13 @@ function formatocd_buffer_send_to_buffer( $post_id ) {
         ];
 
         if ( $image_url ) {
-            $input_vars['assets'] = [ 'images' => [ ['url' => $image_url] ] ];
+            $input_vars['assets'] = [
+                [
+                    'image' => [
+                        'url' => $image_url
+                    ]
+                ]
+            ];
         }
 
         if ( 'customScheduled' === $mode && ! empty( $due_at ) ) {
