@@ -3,7 +3,7 @@
  * Plugin Name: FormatoCD Publish with Buffer
  * Plugin URI:  https://github.com/formatocd/formatocd-publish-with-buffer
  * Description: Generates Buffer posts automatically from WordPress posts.
- * Version:     1.0.0
+ * Version:     1.1.0
  * Author:      Carlos Durán
  * License:     GPL-2.0+
  * Text Domain: formatocd-publish-with-buffer
@@ -14,20 +14,22 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-add_action( 'add_meta_boxes', 'buffer_plugin_add_meta_box' );
-function buffer_plugin_add_meta_box() {
+
+
+add_action( 'add_meta_boxes', 'formatocd_buffer_add_meta_box' );
+function formatocd_buffer_add_meta_box() {
     add_meta_box(
-        'buffer_plugin_meta_box',      
+        'formatocd_buffer_meta_box',      
         __( 'FormatoCD Publish with Buffer', 'formatocd-publish-with-buffer' ),          
-        'buffer_plugin_meta_box_html', 
+        'formatocd_buffer_meta_box_html', 
         'post',                        
         'side',                        
         'high'                         
     );
 }
 
-function buffer_plugin_meta_box_html( $post ) {
-    wp_nonce_field( 'buffer_plugin_save_meta', 'buffer_plugin_meta_nonce' );
+function formatocd_buffer_meta_box_html( $post ) {
+    wp_nonce_field( 'formatocd_buffer_save_meta', 'formatocd_buffer_meta_nonce' );
 
     $already_sent = get_post_meta( $post->ID, '_buffer_sent_flag', true );
 
@@ -80,8 +82,8 @@ function buffer_plugin_meta_box_html( $post ) {
     <?php
 }
 
-add_action( 'admin_enqueue_scripts', 'buffer_plugin_enqueue_admin_scripts' );
-function buffer_plugin_enqueue_admin_scripts( $hook ) {
+add_action( 'admin_enqueue_scripts', 'formatocd_buffer_enqueue_admin_scripts' );
+function formatocd_buffer_enqueue_admin_scripts( $hook ) {
     if ( 'post.php' !== $hook && 'post-new.php' !== $hook ) {
         return;
     }
@@ -94,9 +96,9 @@ function buffer_plugin_enqueue_admin_scripts( $hook ) {
     );
 }
 
-add_action( 'save_post', 'buffer_plugin_save_meta_box_data' );
-function buffer_plugin_save_meta_box_data( $post_id ) {
-    if ( ! isset( $_POST['buffer_plugin_meta_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['buffer_plugin_meta_nonce'] ) ), 'buffer_plugin_save_meta' ) ) {
+add_action( 'save_post', 'formatocd_buffer_save_meta_box_data' );
+function formatocd_buffer_save_meta_box_data( $post_id ) {
+    if ( ! isset( $_POST['formatocd_buffer_meta_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['formatocd_buffer_meta_nonce'] ) ), 'formatocd_buffer_save_meta' ) ) {
         return;
     }
     if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) return;
@@ -123,26 +125,25 @@ function buffer_plugin_save_meta_box_data( $post_id ) {
     }
 
     if ( 'publish' === get_post_status( $post_id ) ) {
-        buffer_plugin_check_and_send( $post_id, $is_active );
+        formatocd_buffer_check_and_send( $post_id, $is_active );
     }
 }
 
-add_action( 'publish_future_post', 'buffer_plugin_trigger_scheduled_post' );
-function buffer_plugin_trigger_scheduled_post( $post_id ) {
+add_action( 'publish_future_post', 'formatocd_buffer_trigger_scheduled_post' );
+function formatocd_buffer_trigger_scheduled_post( $post_id ) {
     $is_active = get_post_meta( $post_id, '_buffer_is_active', true );
-    buffer_plugin_check_and_send( $post_id, $is_active );
+    formatocd_buffer_check_and_send( $post_id, $is_active );
 }
 
-function buffer_plugin_check_and_send( $post_id, $is_active ) {
+function formatocd_buffer_check_and_send( $post_id, $is_active ) {
     $already_sent = get_post_meta( $post_id, '_buffer_sent_flag', true );
     
     if ( 'yes' === $is_active && 'yes' !== $already_sent ) {
-        update_post_meta( $post_id, '_buffer_sent_flag', 'yes' ); 
-        buffer_plugin_send_to_buffer( $post_id );
+        formatocd_buffer_send_to_buffer( $post_id );
     }
 }
 
-function buffer_plugin_send_to_buffer( $post_id ) {
+function formatocd_buffer_send_to_buffer( $post_id ) {
     $post = get_post( $post_id );
     
     $api_token   = get_option( 'buffer_api_token' );
@@ -198,6 +199,8 @@ function buffer_plugin_send_to_buffer( $post_id ) {
       }
     }';
 
+    $all_success = true;
+
     foreach ( $channels as $channel_id ) {
         $input_vars = [
             'text'           => $message,
@@ -219,7 +222,7 @@ function buffer_plugin_send_to_buffer( $post_id ) {
             'variables' => [ 'input' => $input_vars ]
         ];
 
-        wp_remote_post( 'https://api.buffer.com', [
+        $response = wp_remote_post( 'https://api.buffer.com', [
             'headers'     => [
                 'Content-Type'  => 'application/json',
                 'Authorization' => 'Bearer ' . $api_token,
@@ -227,53 +230,86 @@ function buffer_plugin_send_to_buffer( $post_id ) {
             'body'        => wp_json_encode( $payload ),
             'data_format' => 'body',
             'timeout'     => 15,
-            'blocking'    => false 
+            'blocking'    => true 
         ] );
+
+        if ( is_wp_error( $response ) ) {
+            // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+            error_log( 'Buffer API Error (WP Error): ' . $response->get_error_message() );
+            $all_success = false;
+        } else {
+            $status_code = wp_remote_retrieve_response_code( $response );
+            $body = wp_remote_retrieve_body( $response );
+            if ( $status_code >= 400 ) {
+                // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+                error_log( "Buffer API Error ($status_code): " . $body );
+                $all_success = false;
+            } else {
+                $body_data = json_decode( $body, true );
+                if ( isset($body_data['data']['createPost']['message']) && !isset($body_data['data']['createPost']['post']) ) {
+                    // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+                    error_log( "Buffer API Mutation Error: " . $body_data['data']['createPost']['message'] );
+                    $all_success = false;
+                }
+            }
+        }
+    }
+
+    if ( $all_success ) {
+        update_post_meta( $post_id, '_buffer_sent_flag', 'yes' );
     }
 }
 
-add_action( 'admin_menu', 'buffer_plugin_add_admin_menu' );
-function buffer_plugin_add_admin_menu() {
+add_action( 'admin_menu', 'formatocd_buffer_add_admin_menu' );
+function formatocd_buffer_add_admin_menu() {
     add_menu_page(
         __( 'FormatoCD Publish with Buffer', 'formatocd-publish-with-buffer' ),            
         __( 'FormatoCD Publish with Buffer', 'formatocd-publish-with-buffer' ),            
         'manage_options',                 
         'formatocd-publish-with-buffer',            
-        'buffer_plugin_settings_page_html', 
+        'formatocd_buffer_settings_page_html', 
         'dashicons-share',                
         80                                
     );
 }
 
-add_action( 'admin_init', 'buffer_plugin_settings_init' );
-function buffer_plugin_settings_init() {
-    register_setting( 'buffer_plugin_settings_group', 'buffer_api_token', 'sanitize_text_field' );
-    register_setting( 'buffer_plugin_settings_group',
+add_action( 'admin_init', 'formatocd_buffer_settings_init' );
+function formatocd_buffer_settings_init() {
+    register_setting( 'formatocd_buffer_settings_group', 'buffer_api_token', 'formatocd_buffer_sanitize_api_token' );
+    register_setting( 'formatocd_buffer_settings_group',
         'buffer_channels',
         array(
             'type'              => 'string',
-            'sanitize_callback' => 'buffer_plugin_sanitize_channels',
+            'sanitize_callback' => 'formatocd_buffer_sanitize_channels',
         )
     );
-    register_setting( 'buffer_plugin_settings_group', 'buffer_template', 'sanitize_textarea_field' );
-    register_setting( 'buffer_plugin_settings_group', 'buffer_allowed_category', 'absint' );
-    register_setting( 'buffer_plugin_settings_group', 'buffer_default_mode', 'sanitize_text_field' );
+    register_setting( 'formatocd_buffer_settings_group', 'buffer_template', 'sanitize_textarea_field' );
+    register_setting( 'formatocd_buffer_settings_group', 'buffer_allowed_category', 'absint' );
+    register_setting( 'formatocd_buffer_settings_group', 'buffer_default_mode', 'sanitize_text_field' );
 
     add_settings_section(
-        'buffer_plugin_main_section',
+        'formatocd_buffer_main_section',
         __( 'API and Publishing Settings', 'formatocd-publish-with-buffer' ),
         '__return_empty_string', 
         'formatocd-publish-with-buffer'
     );
 
-    add_settings_field( 'buffer_api_token', __( 'Buffer API Token', 'formatocd-publish-with-buffer' ), 'buffer_plugin_api_token_cb', 'formatocd-publish-with-buffer', 'buffer_plugin_main_section' );
-    add_settings_field( 'buffer_channels', __( 'Channel IDs', 'formatocd-publish-with-buffer' ), 'buffer_plugin_channels_cb', 'formatocd-publish-with-buffer', 'buffer_plugin_main_section' );
-    add_settings_field( 'buffer_template', __( 'Message Template', 'formatocd-publish-with-buffer' ), 'buffer_plugin_template_cb', 'formatocd-publish-with-buffer', 'buffer_plugin_main_section' );
-    add_settings_field( 'buffer_default_mode', __( 'Default Publishing Mode', 'formatocd-publish-with-buffer' ), 'buffer_plugin_mode_cb', 'formatocd-publish-with-buffer', 'buffer_plugin_main_section' );
-    add_settings_field( 'buffer_allowed_category', __( 'Filter by Category', 'formatocd-publish-with-buffer' ), 'buffer_plugin_category_cb', 'formatocd-publish-with-buffer', 'buffer_plugin_main_section' );
+    add_settings_field( 'buffer_api_token', __( 'Buffer API Token', 'formatocd-publish-with-buffer' ), 'formatocd_buffer_api_token_cb', 'formatocd-publish-with-buffer', 'formatocd_buffer_main_section' );
+    add_settings_field( 'buffer_channels', __( 'Channel IDs', 'formatocd-publish-with-buffer' ), 'formatocd_buffer_channels_cb', 'formatocd-publish-with-buffer', 'formatocd_buffer_main_section' );
+    add_settings_field( 'buffer_template', __( 'Message Template', 'formatocd-publish-with-buffer' ), 'formatocd_buffer_template_cb', 'formatocd-publish-with-buffer', 'formatocd_buffer_main_section' );
+    add_settings_field( 'buffer_default_mode', __( 'Default Publishing Mode', 'formatocd-publish-with-buffer' ), 'formatocd_buffer_mode_cb', 'formatocd-publish-with-buffer', 'formatocd_buffer_main_section' );
+    add_settings_field( 'buffer_allowed_category', __( 'Filter by Category', 'formatocd-publish-with-buffer' ), 'formatocd_buffer_category_cb', 'formatocd-publish-with-buffer', 'formatocd_buffer_main_section' );
 }
 
-function buffer_plugin_sanitize_channels( $input ) {
+function formatocd_buffer_sanitize_api_token( $input ) {
+    $input = sanitize_text_field( $input );
+    if ( empty( $input ) ) {
+        return get_option( 'buffer_api_token' );
+    }
+    return $input;
+}
+
+function formatocd_buffer_sanitize_channels( $input ) {
     if ( ! is_array( $input ) ) {
         $input = explode( ',', $input );
     }
@@ -283,19 +319,23 @@ function buffer_plugin_sanitize_channels( $input ) {
     return array_filter( $channels ); 
 }
 
-function buffer_plugin_api_token_cb() {
+function formatocd_buffer_api_token_cb() {
     $val = get_option( 'buffer_api_token' );
-    echo '<input type="password" name="buffer_api_token" value="' . esc_attr( $val ) . '" class="regular-text" />';
+    $placeholder = ! empty( $val ) ? '********' : '';
+    echo '<input type="password" name="buffer_api_token" value="" placeholder="' . esc_attr( $placeholder ) . '" class="regular-text" />';
+    if ( ! empty( $val ) ) {
+        echo '<p class="description">' . esc_html__( 'Token is set. Enter a new one to update it, or leave blank to keep the current one.', 'formatocd-publish-with-buffer' ) . '</p>';
+    }
 }
 
-function buffer_plugin_channels_cb() {
+function formatocd_buffer_channels_cb() {
     $val = get_option( 'buffer_channels', [] );
     $val_string = is_array( $val ) ? implode( ', ', $val ) : '';
     echo '<input type="text" name="buffer_channels" value="' . esc_attr( $val_string ) . '" class="regular-text" />';
     echo '<p class="description">' . esc_html__( 'Example:', 'formatocd-publish-with-buffer' ) . ' <code>id_1, id_2</code></p>';
 }
 
-function buffer_plugin_template_cb() {
+function formatocd_buffer_template_cb() {
     $val = get_option( 'buffer_template', '{title} - {url}' );
     echo '<textarea name="buffer_template" rows="3" class="large-text">' . esc_textarea( $val ) . '</textarea>';
     echo '<p class="description"><strong>' . esc_html__( 'Available variables:', 'formatocd-publish-with-buffer' ) . '</strong><br>';
@@ -307,7 +347,7 @@ function buffer_plugin_template_cb() {
     echo '<code>{tags}</code> : ' . esc_html__( 'Post tags (automatically converted to #hashtags).', 'formatocd-publish-with-buffer' ) . '</p>';
 }
 
-function buffer_plugin_mode_cb() {
+function formatocd_buffer_mode_cb() {
     $val = get_option( 'buffer_default_mode', '' ); 
     ?>
     <select name="buffer_default_mode">
@@ -319,7 +359,7 @@ function buffer_plugin_mode_cb() {
     <?php
 }
 
-function buffer_plugin_category_cb() {
+function formatocd_buffer_category_cb() {
     $val = get_option( 'buffer_allowed_category', '' );
     $args = [
         'show_option_all'    => __( 'All categories', 'formatocd-publish-with-buffer' ),
@@ -330,14 +370,14 @@ function buffer_plugin_category_cb() {
     wp_dropdown_categories( $args );
 }
 
-function buffer_plugin_settings_page_html() {
+function formatocd_buffer_settings_page_html() {
     if ( ! current_user_can( 'manage_options' ) ) return;
     ?>
     <div class="wrap">
         <h1><?php esc_html_e( 'FormatoCD Publish with Buffer Settings', 'formatocd-publish-with-buffer' ); ?></h1>
         <form action="options.php" method="post">
             <?php
-            settings_fields( 'buffer_plugin_settings_group' );
+            settings_fields( 'formatocd_buffer_settings_group' );
             do_settings_sections( 'formatocd-publish-with-buffer' );
             submit_button( __( 'Save Settings', 'formatocd-publish-with-buffer' ) );
             ?>
