@@ -74,7 +74,7 @@ Yes! If you schedule a post in WordPress to be published next week, the plugin w
 
 == Changelog ==
 
-= 1.3.0 - 2026-09-14 =
+= 1.2.0 - 2026-09-14 =
 ### Added
 * Full support for WordPress 7.1 and its new iframe-based block editor.
 
@@ -95,15 +95,11 @@ Yes! If you schedule a post in WordPress to be published next week, the plugin w
 * Renamed all functions and hooks to use the `formatocd_buffer_` prefix to prevent conflicts.
 * Masked the API Token field in settings for better privacy.
 
-= 1.2.0 =
+= 1.1.0 - 2026-05-30 =
 ### Changed
 * Updated compatibility for WordPress 7.0.
 
-= 1.1.0 =
-### Fixed
-* Minor bug fixes and improvements.
-
-= 1.0.0 =
+= 1.0.0 - 2026-04-04 =
 ### Added
 * Initial public release on the WordPress repository.
 * Support for GraphQL Buffer API.

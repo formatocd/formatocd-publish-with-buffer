@@ -3,7 +3,7 @@
  * Plugin Name: FormatoCD Publish with Buffer
  * Plugin URI:  https://github.com/formatocd/formatocd-publish-with-buffer
  * Description: Generates Buffer posts automatically from WordPress posts.
- * Version:     1.3.0
+ * Version:     1.2.0
  * Author:      Carlos Durán
  * License:     GPL-2.0+
  * Text Domain: formatocd-publish-with-buffer
