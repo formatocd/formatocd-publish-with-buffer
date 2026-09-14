@@ -3,7 +3,7 @@
  * Plugin Name: FormatoCD Publish with Buffer
  * Plugin URI:  https://github.com/formatocd/formatocd-publish-with-buffer
  * Description: Generates Buffer posts automatically from WordPress posts.
- * Version:     1.1.0
+ * Version:     1.3.0
  * Author:      Carlos Durán
  * License:     GPL-2.0+
  * Text Domain: formatocd-publish-with-buffer
@@ -13,8 +13,6 @@
 if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
-
-
 
 add_action( 'add_meta_boxes', 'formatocd_buffer_add_meta_box' );
 function formatocd_buffer_add_meta_box() {
@@ -49,11 +47,9 @@ function formatocd_buffer_meta_box_html( $post ) {
             $is_active = 'no';       
             $mode      = 'shareNow'; 
         }
-        $due_at = '';
     } else {
         $is_active = get_post_meta( $post->ID, '_buffer_is_active', true );
         $mode      = get_post_meta( $post->ID, '_buffer_mode', true );
-        $due_at    = get_post_meta( $post->ID, '_buffer_due_at', true );
     }
 
     ?>
@@ -69,31 +65,9 @@ function formatocd_buffer_meta_box_html( $post ) {
         <select name="buffer_mode" id="buffer_mode" style="width: 100%;">
             <option value="shareNow" <?php selected( $mode, 'shareNow' ); ?>><?php esc_html_e( 'Share Now', 'formatocd-publish-with-buffer' ); ?></option>
             <option value="addToQueue" <?php selected( $mode, 'addToQueue' ); ?>><?php esc_html_e( 'Add to Queue', 'formatocd-publish-with-buffer' ); ?></option>
-            <option value="customScheduled" <?php selected( $mode, 'customScheduled' ); ?>><?php esc_html_e( 'Custom Scheduled', 'formatocd-publish-with-buffer' ); ?></option>
         </select>
     </p>
-
-    <p id="buffer_date_wrapper" style="<?php echo ( $mode === 'customScheduled' ) ? 'display:block;' : 'display:none;'; ?>">
-        <label for="buffer_due_at"><?php esc_html_e( 'Date and Time (UTC):', 'formatocd-publish-with-buffer' ); ?></label>
-        <input type="datetime-local" name="buffer_due_at" id="buffer_due_at" value="<?php echo esc_attr( $due_at ); ?>" style="width: 100%;" />
-        <small><?php esc_html_e( 'Format required for Buffer.', 'formatocd-publish-with-buffer' ); ?></small>
-    </p>
-
     <?php
-}
-
-add_action( 'admin_enqueue_scripts', 'formatocd_buffer_enqueue_admin_scripts' );
-function formatocd_buffer_enqueue_admin_scripts( $hook ) {
-    if ( 'post.php' !== $hook && 'post-new.php' !== $hook ) {
-        return;
-    }
-    wp_enqueue_script( 
-        'buffer-admin-script', 
-        plugins_url( 'js/buffer-admin.js', __FILE__ ), 
-        array(), 
-        '1.0.0', 
-        true 
-    );
 }
 
 add_action( 'save_post', 'formatocd_buffer_save_meta_box_data' );
@@ -115,13 +89,6 @@ function formatocd_buffer_save_meta_box_data( $post_id ) {
 
     if ( isset( $_POST['buffer_mode'] ) ) {
         update_post_meta( $post_id, '_buffer_mode', sanitize_text_field( wp_unslash( $_POST['buffer_mode'] ) ) );
-    }
-
-    if ( isset( $_POST['buffer_due_at'] ) && ! empty( $_POST['buffer_due_at'] ) ) {
-        $date = new DateTime( sanitize_text_field( wp_unslash( $_POST['buffer_due_at'] ) ) );
-        update_post_meta( $post_id, '_buffer_due_at', $date->format('Y-m-d\TH:i:s\Z') );
-    } else {
-        delete_post_meta( $post_id, '_buffer_due_at' );
     }
 
     if ( 'publish' === get_post_status( $post_id ) ) {
@@ -173,9 +140,12 @@ function formatocd_buffer_send_to_buffer( $post_id ) {
         $tags_string = implode(' ', $hashtag_array);
     }
 
+    $title_decoded   = html_entity_decode( $post->post_title, ENT_QUOTES, 'UTF-8' );
+    $excerpt_decoded = html_entity_decode( $excerpt, ENT_QUOTES, 'UTF-8' );
+
     $message = str_replace(
         ['{title}', '{url}', '{excerpt}', '{author}', '{category}', '{tags}'],
-        [$post->post_title, get_permalink( $post_id ), $excerpt, $author_name, $category_name, $tags_string],
+        [$title_decoded, get_permalink( $post_id ), $excerpt_decoded, $author_name, $category_name, $tags_string],
         $template
     );
 
@@ -184,8 +154,7 @@ function formatocd_buffer_send_to_buffer( $post_id ) {
         $image_url = get_the_post_thumbnail_url( $post_id, 'full' );
     }
 
-    $mode   = get_post_meta( $post_id, '_buffer_mode', true );
-    $due_at = get_post_meta( $post_id, '_buffer_due_at', true );
+    $mode = get_post_meta( $post_id, '_buffer_mode', true );
 
     $query = '
     mutation CreatePost($input: CreatePostInput!) {
@@ -217,10 +186,6 @@ function formatocd_buffer_send_to_buffer( $post_id ) {
                     ]
                 ]
             ];
-        }
-
-        if ( 'customScheduled' === $mode && ! empty( $due_at ) ) {
-            $input_vars['dueAt'] = $due_at;
         }
 
         $payload = [
@@ -281,17 +246,26 @@ function formatocd_buffer_add_admin_menu() {
 
 add_action( 'admin_init', 'formatocd_buffer_settings_init' );
 function formatocd_buffer_settings_init() {
-    register_setting( 'formatocd_buffer_settings_group', 'buffer_api_token', 'formatocd_buffer_sanitize_api_token' );
-    register_setting( 'formatocd_buffer_settings_group',
-        'buffer_channels',
-        array(
-            'type'              => 'string',
-            'sanitize_callback' => 'formatocd_buffer_sanitize_channels',
-        )
-    );
-    register_setting( 'formatocd_buffer_settings_group', 'buffer_template', 'sanitize_textarea_field' );
-    register_setting( 'formatocd_buffer_settings_group', 'buffer_allowed_category', 'absint' );
-    register_setting( 'formatocd_buffer_settings_group', 'buffer_default_mode', 'sanitize_text_field' );
+    register_setting( 'formatocd_buffer_settings_group', 'buffer_api_token', array(
+        'type'              => 'string',
+        'sanitize_callback' => 'formatocd_buffer_sanitize_api_token',
+    ) );
+    register_setting( 'formatocd_buffer_settings_group', 'buffer_channels', array(
+        'type'              => 'string',
+        'sanitize_callback' => 'formatocd_buffer_sanitize_channels',
+    ) );
+    register_setting( 'formatocd_buffer_settings_group', 'buffer_template', array(
+        'type'              => 'string',
+        'sanitize_callback' => 'sanitize_textarea_field',
+    ) );
+    register_setting( 'formatocd_buffer_settings_group', 'buffer_allowed_category', array(
+        'type'              => 'integer',
+        'sanitize_callback' => 'absint',
+    ) );
+    register_setting( 'formatocd_buffer_settings_group', 'buffer_default_mode', array(
+        'type'              => 'string',
+        'sanitize_callback' => 'sanitize_text_field',
+    ) );
 
     add_settings_section(
         'formatocd_buffer_main_section',

@@ -2,8 +2,8 @@
 Contributors: formatocd
 Tags: buffer, social media, auto publish, schedule, graphql
 Requires at least: 5.8
-Tested up to: 7.0
-Stable tag: 1.1.0
+Tested up to: 7.1
+Stable tag: 1.3.0
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -20,7 +20,7 @@ Stop copying and pasting links! With this plugin, you can easily share your cont
 
 * **Automatic Publishing:** Automatically sends your WordPress posts to Buffer the moment they are published.
 * **Scheduled Posts Support:** Works seamlessly with native WordPress scheduled posts (`publish_future_post`).
-* **Multiple Publishing Modes:** Choose between Share Now, Add to Queue, or Custom Scheduled.
+* **Multiple Publishing Modes:** Choose between Share Now or Add to Queue.
 * **Customizable Message Templates:** Create your own message format using dynamic variables like `{title}`, `{url}`, `{author}`, and more.
 * **Smart Hashtags:** Automatically converts your WordPress tags into #hashtags for social media.
 * **Category Filtering:** Restrict automatic Buffer posting only to posts belonging to a specific category.
@@ -61,10 +61,7 @@ API Documentacion can be found here: https://developers.buffer.com
 You need to create a custom app in the Buffer Developer Portal to generate your personal access token. Note that this uses the new Buffer GraphQL API.
 
 = How do I find my Channel IDs? =
-You can find your Channel IDs by querying the Buffer GraphQL API or by looking at the URL in your Buffer dashboard when viewing a specific channel.
-
-= Does it support scheduled posts? =
-Yes! If you schedule a post in WordPress to be published next week, the plugin will wait and automatically send it to Buffer at the exact moment WordPress publishes it.
+The easiest way is to use our official command-line tool, [Buffer CLI](https://github.com/formatocd/buffer-cli), which instantly lists all your connected channels and their IDs. Alternatively, you can find them by querying the Buffer GraphQL API manually or by looking at the URL in your Buffer dashboard when viewing a specific channel.
 
 == Screenshots ==
 
@@ -74,7 +71,34 @@ Yes! If you schedule a post in WordPress to be published next week, the plugin w
 
 == Changelog ==
 
-= 1.0.0 =
+= 1.2.0 - 2026-09-14 =
+### Added
+* Full support for WordPress 7.1 and its new iframe-based block editor.
+
+### Changed
+* Replaced asynchronous API calls with synchronous ones, adding robust error logging to `debug.log` for failed Buffer posts.
+* Updated settings registration to follow modern WordPress array standards.
+
+### Removed
+* Removed custom scheduled option for individual Buffer posts (non functional, the post is scheduled by WordPress).
+* Deprecated `load_plugin_textdomain` function call.
+
+### Fixed
+* Updated the GraphQL `assets` input format to comply with Buffer API's May 25, 2026 breaking changes.
+* Prevented fatal errors when saving malformed dates in the custom schedule field.
+* Decoded HTML entities in post titles and excerpts for cleaner display on social networks.
+* Suppressed `error_log` Plugin Check warnings using standard `phpcs:ignore` comments.
+
+### Security
+* Renamed all functions and hooks to use the `formatocd_buffer_` prefix to prevent conflicts.
+* Masked the API Token field in settings for better privacy.
+
+= 1.1.0 - 2026-05-30 =
+### Changed
+* Updated compatibility for WordPress 7.0.
+
+= 1.0.0 - 2026-04-04 =
+### Added
 * Initial public release on the WordPress repository.
-* Added support for GraphQL Buffer API.
-* Included dynamic variables and UI improvements to prevent duplicate posts.
+* Support for GraphQL Buffer API.
+* Dynamic variables and UI improvements to prevent duplicate posts.

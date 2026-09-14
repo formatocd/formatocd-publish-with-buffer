@@ -1,15 +1,12 @@
-document.addEventListener('DOMContentLoaded', () => {
-    const bufferModeSelect = document.getElementById('buffer_mode');
-
-    if (bufferModeSelect) {
-        bufferModeSelect.addEventListener('change', (e) => {
-            const dateWrapper = document.getElementById('buffer_date_wrapper');
-
+document.addEventListener('change', (e) => {
+    if (e.target && e.target.id === 'buffer_mode') {
+        const dateWrapper = document.getElementById('buffer_date_wrapper');
+        if (dateWrapper) {
             if (e.target.value === 'customScheduled') {
                 dateWrapper.style.display = 'block';
             } else {
                 dateWrapper.style.display = 'none';
             }
-        });
+        }
     }
 });
