@@ -1,9 +1,9 @@
 === FormatoCD Publish with Buffer ===
 Contributors: formatocd
-Tags: buffer, social media, auto publish, schedule, graphql
+Tags: buffer, social media, auto publish, graphql
 Requires at least: 5.8
 Tested up to: 7.1
-Stable tag: 1.3.0
+Stable tag: 1.2.1
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -14,12 +14,11 @@ Generates Buffer posts automatically from WordPress posts. Connect your site to 
 
 FormatoCD Publish with Buffer is a powerful, lightweight plugin that automates the publishing of your WordPress posts to your social media channels using the modern Buffer GraphQL API. 
 
-Stop copying and pasting links! With this plugin, you can easily share your content across multiple social networks as soon as you hit "Publish", or schedule them to be added to your Buffer queue.
+Stop copying and pasting links! With this plugin, you can easily share your content across multiple social networks as soon as you hit "Publish", or add them to your Buffer queue.
 
 = 🚀 Features =
 
 * **Automatic Publishing:** Automatically sends your WordPress posts to Buffer the moment they are published.
-* **Scheduled Posts Support:** Works seamlessly with native WordPress scheduled posts (`publish_future_post`).
 * **Multiple Publishing Modes:** Choose between Share Now or Add to Queue.
 * **Customizable Message Templates:** Create your own message format using dynamic variables like `{title}`, `{url}`, `{author}`, and more.
 * **Smart Hashtags:** Automatically converts your WordPress tags into #hashtags for social media.
@@ -37,7 +36,7 @@ Stop copying and pasting links! With this plugin, you can easily share your cont
 
 == External Services ==
 
-This plugin connects to the third-party Buffer GraphQL API (https://api.buffer.com) to automatically publish or schedule your social media posts.
+This plugin connects to the third-party Buffer GraphQL API (https://api.buffer.com) to automatically publish your social media posts.
 
 Data is sent to Buffer ONLY when a WordPress post is published (or automatically published via WordPress cron) and the user has actively checked the "Send to Buffer on publish" option.
 
@@ -85,7 +84,6 @@ The easiest way is to use our official command-line tool, [Buffer CLI](https://g
 
 ### Fixed
 * Updated the GraphQL `assets` input format to comply with Buffer API's May 25, 2026 breaking changes.
-* Prevented fatal errors when saving malformed dates in the custom schedule field.
 * Decoded HTML entities in post titles and excerpts for cleaner display on social networks.
 * Suppressed `error_log` Plugin Check warnings using standard `phpcs:ignore` comments.
 
