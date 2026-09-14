@@ -70,6 +70,10 @@ The easiest way is to use our official command-line tool, [Buffer CLI](https://g
 
 == Changelog ==
 
+= 1.2.1 - 2026-09-15 =
+### Fixed
+* Wrong versions and texts.
+
 = 1.2.0 - 2026-09-14 =
 ### Added
 * Full support for WordPress 7.1 and its new iframe-based block editor.
