@@ -3,7 +3,7 @@
  * Plugin Name: FormatoCD Publish with Buffer
  * Plugin URI:  https://github.com/formatocd/formatocd-publish-with-buffer
  * Description: Generates Buffer posts automatically from WordPress posts.
- * Version:     1.1.0
+ * Version:     1.3.0
  * Author:      Carlos Durán
  * License:     GPL-2.0+
  * Text Domain: formatocd-publish-with-buffer
@@ -118,8 +118,12 @@ function formatocd_buffer_save_meta_box_data( $post_id ) {
     }
 
     if ( isset( $_POST['buffer_due_at'] ) && ! empty( $_POST['buffer_due_at'] ) ) {
-        $date = new DateTime( sanitize_text_field( wp_unslash( $_POST['buffer_due_at'] ) ) );
-        update_post_meta( $post_id, '_buffer_due_at', $date->format('Y-m-d\TH:i:s\Z') );
+        try {
+            $date = new DateTime( sanitize_text_field( wp_unslash( $_POST['buffer_due_at'] ) ) );
+            update_post_meta( $post_id, '_buffer_due_at', $date->format('Y-m-d\TH:i:s\Z') );
+        } catch ( Exception $e ) {
+            delete_post_meta( $post_id, '_buffer_due_at' );
+        }
     } else {
         delete_post_meta( $post_id, '_buffer_due_at' );
     }
@@ -173,9 +177,12 @@ function formatocd_buffer_send_to_buffer( $post_id ) {
         $tags_string = implode(' ', $hashtag_array);
     }
 
+    $title_decoded   = html_entity_decode( $post->post_title, ENT_QUOTES, 'UTF-8' );
+    $excerpt_decoded = html_entity_decode( $excerpt, ENT_QUOTES, 'UTF-8' );
+
     $message = str_replace(
         ['{title}', '{url}', '{excerpt}', '{author}', '{category}', '{tags}'],
-        [$post->post_title, get_permalink( $post_id ), $excerpt, $author_name, $category_name, $tags_string],
+        [$title_decoded, get_permalink( $post_id ), $excerpt_decoded, $author_name, $category_name, $tags_string],
         $template
     );
 
@@ -183,6 +190,7 @@ function formatocd_buffer_send_to_buffer( $post_id ) {
     if ( has_post_thumbnail( $post_id ) ) {
         $image_url = get_the_post_thumbnail_url( $post_id, 'full' );
     }
+    $image_url = 'https://imgs.search.brave.com/zt5vfb_5MVqUN0PdhhdtvmSSC_l7UH9zir7rdWtPR_Q/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly93YWxs/cGFwZXJhY2Nlc3Mu/Y29tL2Z1bGwvMTA4/MDg4MjAuanBn';
 
     $mode   = get_post_meta( $post_id, '_buffer_mode', true );
     $due_at = get_post_meta( $post_id, '_buffer_due_at', true );
@@ -281,17 +289,26 @@ function formatocd_buffer_add_admin_menu() {
 
 add_action( 'admin_init', 'formatocd_buffer_settings_init' );
 function formatocd_buffer_settings_init() {
-    register_setting( 'formatocd_buffer_settings_group', 'buffer_api_token', 'formatocd_buffer_sanitize_api_token' );
-    register_setting( 'formatocd_buffer_settings_group',
-        'buffer_channels',
-        array(
-            'type'              => 'string',
-            'sanitize_callback' => 'formatocd_buffer_sanitize_channels',
-        )
-    );
-    register_setting( 'formatocd_buffer_settings_group', 'buffer_template', 'sanitize_textarea_field' );
-    register_setting( 'formatocd_buffer_settings_group', 'buffer_allowed_category', 'absint' );
-    register_setting( 'formatocd_buffer_settings_group', 'buffer_default_mode', 'sanitize_text_field' );
+    register_setting( 'formatocd_buffer_settings_group', 'buffer_api_token', array(
+        'type'              => 'string',
+        'sanitize_callback' => 'formatocd_buffer_sanitize_api_token',
+    ) );
+    register_setting( 'formatocd_buffer_settings_group', 'buffer_channels', array(
+        'type'              => 'string',
+        'sanitize_callback' => 'formatocd_buffer_sanitize_channels',
+    ) );
+    register_setting( 'formatocd_buffer_settings_group', 'buffer_template', array(
+        'type'              => 'string',
+        'sanitize_callback' => 'sanitize_textarea_field',
+    ) );
+    register_setting( 'formatocd_buffer_settings_group', 'buffer_allowed_category', array(
+        'type'              => 'integer',
+        'sanitize_callback' => 'absint',
+    ) );
+    register_setting( 'formatocd_buffer_settings_group', 'buffer_default_mode', array(
+        'type'              => 'string',
+        'sanitize_callback' => 'sanitize_text_field',
+    ) );
 
     add_settings_section(
         'formatocd_buffer_main_section',

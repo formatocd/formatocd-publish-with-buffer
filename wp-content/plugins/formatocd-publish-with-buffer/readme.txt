@@ -2,8 +2,8 @@
 Contributors: formatocd
 Tags: buffer, social media, auto publish, schedule, graphql
 Requires at least: 5.8
-Tested up to: 7.0
-Stable tag: 1.1.0
+Tested up to: 7.1
+Stable tag: 1.3.0
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -74,7 +74,37 @@ Yes! If you schedule a post in WordPress to be published next week, the plugin w
 
 == Changelog ==
 
+= 1.3.0 - 2026-09-14 =
+### Added
+* Full support for WordPress 7.1 and its new iframe-based block editor.
+
+### Changed
+* Replaced asynchronous API calls with synchronous ones, adding robust error logging to `debug.log` for failed Buffer posts.
+* Updated settings registration to follow modern WordPress array standards.
+
+### Removed
+* Deprecated `load_plugin_textdomain` function call.
+
+### Fixed
+* Updated the GraphQL `assets` input format to comply with Buffer API's May 25, 2026 breaking changes.
+* Prevented fatal errors when saving malformed dates in the custom schedule field.
+* Decoded HTML entities in post titles and excerpts for cleaner display on social networks.
+* Suppressed `error_log` Plugin Check warnings using standard `phpcs:ignore` comments.
+
+### Security
+* Renamed all functions and hooks to use the `formatocd_buffer_` prefix to prevent conflicts.
+* Masked the API Token field in settings for better privacy.
+
+= 1.2.0 =
+### Changed
+* Updated compatibility for WordPress 7.0.
+
+= 1.1.0 =
+### Fixed
+* Minor bug fixes and improvements.
+
 = 1.0.0 =
+### Added
 * Initial public release on the WordPress repository.
-* Added support for GraphQL Buffer API.
-* Included dynamic variables and UI improvements to prevent duplicate posts.
+* Support for GraphQL Buffer API.
+* Dynamic variables and UI improvements to prevent duplicate posts.
